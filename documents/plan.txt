@@ -1,17 +1,19 @@
 Minimum viable product TODO:
 
+[] SAT solver:
+
+    [] DPLL algo
+    [] Maybe 2-SAT polynomial time algorithm?
+    [] Maybe conflict driven?
+
 [] Expr evaluation:
 
     [] Operators: and, or, not, xor, nor, nand, if, iff
     [] Global variables storing booleans and subexprs
 
+[] Tseiten transformation
+
 [] Truth table generation
-
-[] SAT solver:
-
-    [] 2-SAT polynomial time algorithm 
-    [] DPLL algo
-    [] Maybe conflict driven?
 
 
 Not quite part of MVP TODO:
