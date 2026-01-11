@@ -1,0 +1,80 @@
+Minimum viable product TODO:
+
+[] Expr evaluation:
+
+    [] Operators: and, or, not, xor, nor, nand, if, iff
+    [] Global variables storing booleans and subexprs
+
+[] Truth table generation
+
+[] SAT solver:
+
+    [] 2-SAT polynomial time algorithm 
+    [] DPLL algo
+    [] Maybe conflict driven?
+
+
+Not quite part of MVP TODO:
+
+[] Free with SAT solver:
+    
+    [] Tautology checker
+    [] Logical equivlance checker
+    [] Argument checking
+    [] Maybe CNF/DNF conversation?
+
+[] Explict expr building from other exprs
+    - Engine.or, Engine.and, ...
+
+Maybe in future TODO:
+
+[] Term rewritting/expr simplification
+
+
+Implementation plan:
+
+* Parser: recursive decent
+* Evaluation of proposition: bytecode vm
+
+
+Example brainstorming
+
+* General API: 
+
+
+``
+engine = Engine()
+
+# Variable definition
+x = engine.def("x", Prop.Bool.T)
+
+# Expr parsing and evaulation
+expr = engine.parse("x or x")
+print(expr.eval().0)                                # Prints "True"
+
+#Logical equilance checking
+engine.logical_eq(x, expr)                          # Returns True
+
+# CNF conversion
+cnf = engine.parse("a -> b").into_cnf()
+
+# SAT Solver
+engine.is_sat(cnf)                                  # Returns True
+
+args = [
+    engine.parse("a -> b"),
+    engine.parse("a"),
+]
+
+a = engine.var("a")
+b = engine.var("b")
+
+raw_cnf = engine.cnf_from_arr([[a, b], [a, b.negated()]])
+new_cnf = engine.condition(a, Bool.T)
+
+
+conclusion = engine.parse("b")
+
+engine.is_valid_argument(args, conclusion)          # Returns True
+
+`
