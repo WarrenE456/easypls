@@ -11,6 +11,7 @@ pub mod easypls {
 
     // Representation of a boolean expression in conjunctive normal form
     #[pyclass]
+    #[derive(Clone, Debug)]
     pub struct CNF {
         // Symbol_table[id - 1] represents symbol of variable with id
         // We define it this way because 0 isn't distict from -0
@@ -23,15 +24,14 @@ pub mod easypls {
     }
 
     impl CNF {
-        // Return list of all unit clauses
-        pub fn find_unit_clauses(&self) -> Vec<isize> {
-            let mut unit_clauses = Vec::new();
+        // Returns first unit clause or None if there are no unit cclauses
+        pub fn find_unit_clause(&self) -> Option<isize> {
             for clause in self.clauses.iter() {
                 if clause.len() == 1 {
-                    unit_clauses.push(clause[0]);
+                    return Some(clause[0]);
                 }
             }
-            unit_clauses
+            None
         }
 
         pub fn new(symbol_table: Arc<Vec<String>>, clauses: Vec<Vec<isize>>) -> CNF {
@@ -57,7 +57,7 @@ pub mod easypls {
 
                 for var in clause {
                     if *var == target {
-                        break 'clause_loop;
+                        continue 'clause_loop;
                     }
                     if *var != -target {
                         new_clause.push(*var)
@@ -69,24 +69,55 @@ pub mod easypls {
 
             self.from_self(new_clauses)
         }
-        
-        // Returns if CNF is sat, takes the variable we want to condition on
-        fn is_sat_helper(&self, current: isize) -> Option<Vec<usize>> {
-            // Unit propigation
-            // Check if there are no clauses remaining, if so return true
-            // Check if there are any empty clauses, if so return false
-            // Condition on the next variable
-            todo!()
+
+        fn contains_empty_clause(&self) -> bool {
+            for clause in self.clauses.iter() {
+                if clause.len() == 0 {
+                    return true;
+                }
+            }
+            false
+        }
+
+        pub fn unit_propigation(mut self) -> CNF {
+            let mut unit_clause = self.find_unit_clause();
+
+            print!("before: ");
+            dbg!(&self);
+            while let Some(clause) = unit_clause {
+                println!("Conditioning on {clause}");
+                self = self.conditioned(clause);
+
+                unit_clause = self.find_unit_clause();
+            }
+            print!("after: ");
+            dbg!(&self);
+
+            self
+        }
+
+        // Returns if CNF is satisfiable (using DPLL algorithm), takes the variable we want to condition on
+        fn dpll(mut self, current: isize) -> bool {
+            self = self.unit_propigation();
+            // TODO pure literal elimination
+
+            if self.clauses.len() == 0 {
+                return true;
+            }
+
+            if self.contains_empty_clause() {
+                return false;
+            }
+
+            self.conditioned(current).dpll(current + 1) || self.conditioned(-current).dpll(current + 1)
         }
     }
 
     #[pymethods]
     impl CNF {
         // Returns whether a CNF is satisfiable
-        // if so we return the signature that makes the CNF true.
-        // otherwise we return None
-        pub fn is_sat(&self) -> Option<Vec<usize>> {
-            self.is_sat_helper(1)
+        pub fn is_sat(&self) -> bool {
+            self.clone().dpll(1)
         }
     }
 }
