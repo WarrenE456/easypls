@@ -10,12 +10,11 @@ use pyo3::prelude::*;
 #[pymodule]
 pub mod easypls {
     use pyo3::prelude::*;
-    use std::sync::Arc;
 
     #[pyclass]
     struct CNF {
         // symbol_table[id] represents symbol of variable with id
-        symbol_table: Arc<Vec<String>>,
+        symbol_table: Rc<Vec<String>>,
 
         // Outer list represents conjunction of inner lists which
         // represent disjunctions of variables, represented by their ids
@@ -34,6 +33,9 @@ pub mod easypls {
             unit_clauses
         }
 
+        fn condition(&mut self, var: usize) {
+        }
+
         // Returns whether a CNF is satisfiable
         // if so we return the signature that makes the CNF true.
         // otherwise we return None
@@ -42,7 +44,6 @@ pub mod easypls {
             // Check if there are no clauses remaining, if so return true
             // Check if there are any empty clauses, if so return false
             // Condition on the next variable
-            todo!()
         }
     }
 }
