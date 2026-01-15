@@ -7,7 +7,87 @@ use pyo3::prelude::*;
 #[pymodule]
 pub mod easypls {
     use pyo3::prelude::*;
+    use std::cell::{Cell, RefCell};
     use std::sync::Arc;
+
+    pub enum Expr {
+        And(And),
+        Or(Or),
+        Not(Not),
+        If(),
+        Iff(),
+        Var(String),
+    }
+
+    pub struct And {
+        l: Box<Expr>,       // left-hand side
+        r: Box<Expr>,       // right-hand side
+    }
+
+    impl And {
+        pub fn new(l: Box<Expr>, r: Box<Expr>) -> And {
+            And {l, r}
+        }
+    }
+
+    pub struct Or {
+        l: Box<Expr>,       // left-hand side
+        r: Box<Expr>,       // right-hand side
+    }
+
+    impl Or {
+        pub fn new(l: Box<Expr>, r: Box<Expr>) -> Or {
+            Or {l, r}
+        }
+    }
+
+    // Implies operator
+    pub struct If {
+        l: Box<Expr>,       // left-hand side
+        r: Box<Expr>,       // right-hand side
+    }
+
+    impl If {
+        pub fn new(l: Box<Expr>, r: Box<Expr>) -> If {
+            If {l, r}
+        }
+    }
+
+    // Bioconditional operator
+    pub struct Iff {
+        l: Box<Expr>,       // left-hand side
+        r: Box<Expr>,       // right-hand side
+    }
+
+    impl Iff {
+        pub fn new(l: Box<Expr>, r: Box<Expr>) -> Iff {
+            Iff {l, r}
+        }
+    }
+
+    pub struct Not {
+        expr: Box<Expr>
+    }
+
+    impl Not {
+        pub fn new(expr: Box<Expr>) -> Not {
+            Not { expr }
+        }
+    }
+
+    pub struct Tseitin {
+        symbols: RefCell<Vec<String>>,      // Symbols we've seen sofar
+        counter: Cell<usize>,               // Counter of intermediate variables we've created
+        exprs: RefCell<Vec<Expr>>,          // List of simplified expressions, TODO raw dog CNFs
+    }
+
+    impl Tseitin {
+        fn tseitin(&self) {
+        }
+        pub fn expr_to_cnf(expr: Expr) -> CNF {
+            todo!()
+        }
+    }
 
     // Representation of a boolean expression in conjunctive normal form
     #[pyclass]
@@ -97,6 +177,7 @@ pub mod easypls {
         }
 
         // Returns if CNF is satisfiable (using DPLL algorithm), takes the variable we want to condition on
+        // TODO undobacktracking instead of cloneing
         fn dpll(mut self, current: isize) -> bool {
             self = self.unit_propigation();
             // TODO pure literal elimination
