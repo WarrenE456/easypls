@@ -28,6 +28,7 @@ impl CNF {
     pub fn is_sat(self) -> bool {
         self.dpll(1)
     }
+
     // Geterate intermediate variable for expression and return its id
     pub fn gen_var(&mut self, expr: &Expr) -> usize {
         // Handle simple variable
