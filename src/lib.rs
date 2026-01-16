@@ -3,7 +3,7 @@ mod tests;
 
 mod expr;
 mod cnf;
-
+mod lexer;
 
 // Python API
 use pyo3::prelude::*;

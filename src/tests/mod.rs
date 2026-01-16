@@ -1,5 +1,6 @@
 use crate::cnf::*;
 use crate::expr::*;
+use crate::lexer::*;
 
 #[test]
 fn unit_propigation() {
@@ -50,4 +51,30 @@ fn tseitin() {
 
     let cnf = expr.tseitin();
     assert!(!cnf.is_sat())
+}
+
+#[test]
+fn lex() {
+    let bytes = "T F _TF 9abc_ ()and or not nor nand xor -><->".as_bytes();
+    let mut lexer = Lexer::new(bytes);
+    assert_eq!(lexer.lex_all().unwrap(), vec![
+        Tok::T,
+        Tok::F,
+        Tok::Identifier(String::from("_TF")),
+        Tok::Identifier(String::from("9abc_")),
+        Tok::LPAREN,
+        Tok::RPAREN,
+        Tok::And,
+        Tok::Or,
+        Tok::Not,
+        Tok::Nor,
+        Tok::Nand,
+        Tok::Xor,
+        Tok::If,
+        Tok::Iff,
+    ]);
+
+    let bytes = "$test".as_bytes();
+    let mut lexer = Lexer::new(bytes);
+    assert!(lexer.next_tok().is_err())
 }
