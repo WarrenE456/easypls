@@ -1,4 +1,5 @@
-use crate::easypls::*;
+use crate::cnf::*;
+use crate::expr::*;
 
 #[test]
 fn unit_propigation() {
