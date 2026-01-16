@@ -39,14 +39,14 @@ fn tseitin() {
     let c = Expr::Var(String::from("c"));
     let expr = Expr::or(Expr::not(Expr::and(a, b)), c);
 
-    let cnf = expr.to_cnf();
-    println!("not (a and b) or c: {:?}", cnf);
+    let cnf = expr.tseitin();
+    assert!(cnf.is_sat());
 
-    // Expr not (a and b) or a
-    let a =Expr::Var(String::from("a"));
+    // Expr not (a or b) and a
+    let a = Expr::Var(String::from("a"));
     let b = Expr::Var(String::from("b"));
-    let expr = Expr::or(Expr::not(Expr::and(a.clone(), b)), a);
+    let expr = Expr::and(Expr::not(Expr::or(a.clone(), b)), a);
 
-    let cnf = expr.to_cnf();
-    println!("not (a and b) or a: {:?}", cnf);
+    let cnf = expr.tseitin();
+    assert!(!cnf.is_sat())
 }

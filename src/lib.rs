@@ -21,13 +21,14 @@ pub mod easypls {
     }
 
     impl Expr {
-        // Converts expression into an CNF via the tseintein transformation
-        pub fn to_cnf(&self) -> CNF {
+        // Converts expression into an equisatisfyable CNF via the tseitin transformation
+        pub fn tseitin(&self) -> CNF {
             let mut cnf = CNF::new(Vec::new(), Vec::new());
             let id = cnf.gen_var(self) as isize;
+            cnf.append_clause(vec![id]);
 
             let cnf_refcell = RefCell::new(cnf);
-            self.tseitin(id, &cnf_refcell);
+            self.tseitin_aux(id, &cnf_refcell);
 
             cnf = cnf_refcell.into_inner();
             cnf
@@ -36,7 +37,7 @@ pub mod easypls {
         // Performs a Tseitin transformation
         // Takes its own id in the CNF, and a refrence to the CNF which we are building
         // Mutate the CNF rather than returning a value
-        pub fn tseitin(&self, id: isize, cnf: &RefCell<CNF>) {
+        pub fn tseitin_aux(&self, id: isize, cnf: &RefCell<CNF>) {
             match self {
                 Expr::Var(name) => self.sub_var_name(name.clone(), id as usize, cnf),
                 Expr::Or(or) => or.tseitin(id, cnf),
@@ -91,8 +92,8 @@ pub mod easypls {
                 (l_id, r_id)
             };
 
-            self.l.tseitin(l_id, cnf);
-            self.r.tseitin(r_id, cnf);
+            self.l.tseitin_aux(l_id, cnf);
+            self.r.tseitin_aux(r_id, cnf);
         }
     }
 
@@ -121,8 +122,8 @@ pub mod easypls {
                 (l_id, r_id)
             };
 
-            self.l.tseitin(l_id, cnf);
-            self.r.tseitin(r_id, cnf);
+            self.l.tseitin_aux(l_id, cnf);
+            self.r.tseitin_aux(r_id, cnf);
         }
     }
 
@@ -148,7 +149,7 @@ pub mod easypls {
                 subexpr_id
             };
 
-            self.expr.tseitin(subexpr_id, cnf);
+            self.expr.tseitin_aux(subexpr_id, cnf);
         }
     }
 

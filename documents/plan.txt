@@ -3,8 +3,10 @@ Minimum viable product TODO:
 [X] SAT solver:
 
     [X] DPLL algo
-    [] (optional) 2-SAT polynomial time algorithm?
-    [] (optional) conflict driven?
+    [] Proof for SAT
+    [] (Optional) Proof for UNSAT
+    [] (Optional) 2-SAT polynomial time algorithm
+    [] (Optional) Conflict driven
 
 [X] Tseiten transformation
 
@@ -24,9 +26,10 @@ Not quite part of MVP TODO:
 [] Free with SAT solver:
     
     [] Tautology checker
-    [] Logical equivlance checker
+    [] Contradiction checker
+    [] Logical equivalence
     [] Argument checking
-    [] Maybe CNF/DNF conversation?
+    [] Maybe CNF/DNF/other conversation?
 
 [] Explict expr building from other exprs
     - Engine.or, Engine.and, ...
