@@ -1,7 +1,9 @@
 use std::cell::RefCell;
 use crate::cnf::CNF;
+use crate::lexer::Lexer;
+use crate::parser::Parser;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 #[allow(dead_code)]
 pub enum Expr {
     And(And),
@@ -12,6 +14,10 @@ pub enum Expr {
 
 #[allow(dead_code)]
 impl Expr {
+    pub fn parse(src: &[u8]) -> Result<Expr, String> {
+        Parser::from(Lexer::new(src)?).statement()
+    }
+
     // Converts expression into an equisatisfyable CNF via the tseitin transformation
     pub fn tseitin(&self) -> CNF {
         let mut cnf = CNF::new(Vec::new(), Vec::new());
@@ -56,9 +62,34 @@ impl Expr {
     pub fn not(subexpr: Expr) -> Expr {
         Expr::Not(Not::new(Box::new(subexpr)))
     }
+
+    // Create "if" expression
+    pub fn eif(l: Expr, r: Expr) -> Expr {
+        Expr::or(Expr::not(l), r)
+    }
+
+    // Create "iff" expression
+    pub fn iff(l: Expr, r: Expr) -> Expr {
+        Expr::and(Expr::eif(l.clone(), r.clone()), Expr::eif(r, l))
+    }
+
+    // Create "iff" expression
+    pub fn xor(l: Expr, r: Expr) -> Expr {
+        Expr::and(Expr::or(l.clone(), r.clone()), Expr::eif(Expr::not(r), Expr::not(l)))
+    }
+
+    // Create "nand" expression
+    pub fn nand(l: Expr, r: Expr) -> Expr {
+        Expr::not(Expr::and(l, r))
+    }
+
+    // Create "nor" expression
+    pub fn nor(l: Expr, r: Expr) -> Expr {
+        Expr::not(Expr::or(l, r))
+    }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct And {
     l: Box<Expr>,       // left-hand side
     r: Box<Expr>,       // right-hand side
@@ -88,7 +119,7 @@ impl And {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Or {
     l: Box<Expr>,       // left-hand side
     r: Box<Expr>,       // right-hand side
@@ -118,7 +149,7 @@ impl Or {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Not {
     expr: Box<Expr>
 }

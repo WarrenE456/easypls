@@ -13,15 +13,40 @@ pub enum Tok {
     Identifier(String),
 
     // Special
-    EOF,
+    EOL,
+}
+
+impl Default for Tok {
+    fn default() -> Self {
+        Tok::EOL
+    }
 }
 
 impl Tok {
-   pub fn is_eof(&self) -> bool {
-        if let Tok::EOF = self {
+   pub fn is_eol(&self) -> bool {
+        if let Tok::EOL = self {
             true
         } else {
             false
+        }
+    }
+
+    pub fn to_string(&self) -> String {
+        match self {
+            Tok::T => String::from("T"),
+            Tok::F => String::from("F"),
+            Tok::LPAREN => String::from("("),
+            Tok::RPAREN => String::from(")"),
+            Tok::And => String::from("and"),
+            Tok::Or => String::from("or"),
+            Tok::Not => String::from("not"),
+            Tok::Nor => String::from("nor"),
+            Tok::Nand => String::from("nand"),
+            Tok::Xor => String::from("xor"),
+            Tok::If => String::from("->"),
+            Tok::Iff => String::from("<->"),
+            Tok::Identifier(name) => name.clone(),
+            Tok::EOL => String::from("end of file"),
         }
     }
 }
@@ -32,11 +57,12 @@ pub struct Lexer<'a> {
     src: &'a [u8],                  // TODO support utf8 characters
     cur: usize,
     keyword_map: HashMap<String, Tok>,
+    tok_next: Result<Tok, String>,
 }
 
 #[allow(dead_code)]
 impl<'a> Lexer<'a> {
-    pub fn new(src: &'a [u8]) -> Lexer<'a> {
+    pub fn new(src: &'a [u8]) -> Result<Lexer<'a>, String> {
         let keyword_map = HashMap::from([
             (String::from("and"), Tok::And),
             (String::from("or"), Tok::Or),
@@ -46,7 +72,10 @@ impl<'a> Lexer<'a> {
             (String::from("xor"), Tok::Xor),
         ]);
 
-        Lexer { src, cur: 0, keyword_map }
+        let mut lexer = Lexer { src, cur: 0, keyword_map, tok_next: Ok(Tok::EOL) };
+        lexer.tok_next = lexer.next_tok();
+
+        Ok(lexer)
     }
 
     fn advance(&mut self) -> Option<u8> {
@@ -76,7 +105,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    pub fn is_match(&mut self, c: u8) -> bool {
+    fn is_match(&mut self, c: u8) -> bool {
         if self.peek().unwrap_or(0) == c {
             self.advance();
             true
@@ -108,11 +137,11 @@ impl<'a> Lexer<'a> {
         (c as char).is_alphanumeric() || c == b'_'
     }
 
-    pub fn next_tok(&mut self) -> Result<Tok, String> {
+    fn next_tok(&mut self) -> Result<Tok, String> {
         self.skip_whitespace();
         let c =  match self.advance() {
             Some(code) => code,
-            None => return Ok(Tok::EOF),
+            None => return Ok(Tok::EOL),
         };
 
         match c {
@@ -145,12 +174,23 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    pub fn advance_tok(&mut self) -> Result<Tok, String> {
+        let next = self.tok_next.clone();
+        self.tok_next = self.next_tok();
+
+        next
+    }
+
+    pub fn peek_tok(&self) -> Result<Tok, String> {
+        self.tok_next.clone()
+    }
+
     pub fn lex_all(&mut self) -> Result<Vec<Tok>, String> {
         let mut toks = Vec::new();
         
         loop {
-            let next_tok = self.next_tok()?;
-            if next_tok.is_eof() {
+            let next_tok = self.advance_tok()?;
+            if next_tok.is_eol() {
                 break;
             }
 

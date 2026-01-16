@@ -4,6 +4,7 @@ mod tests;
 mod expr;
 mod cnf;
 mod lexer;
+mod parser;
 
 // Python API
 use pyo3::prelude::*;
