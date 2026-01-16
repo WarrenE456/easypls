@@ -6,7 +6,7 @@ Minimum viable product TODO:
     [] (optional) 2-SAT polynomial time algorithm?
     [] (optional) conflict driven?
 
-[] Tseiten transformation
+[X] Tseiten transformation
 
 [] Expr parsing:
 
@@ -50,35 +50,36 @@ Example brainstorming
 
 
 ``
+import * from easypls
+
 engine = Engine()
 
 # Variable definition
-x = engine.def("x", Prop.Bool.T)
+x = engine.def("x", True)
 
 # Expr parsing and evaulation
-expr = engine.parse("x or x")
-print(expr.eval().0)                                # Prints "True"
+expr = Expr.from("x or x")
+print(engine.eval(expr))                            # Prints "True"
 
-#Logical equilance checking
-engine.logical_eq(x, expr)                          # Returns True
+# Logical equivilace checking
+engine.logically_eq(x, expr)                        # Returns True
 
 # CNF conversion
-cnf = engine.parse("a -> b").into_cnf()
+cnf = Expr.parse("a -> b").into_cnf()
 
 # SAT Solver
 engine.is_sat(cnf)                                  # Returns True
 
 args = [
-    engine.parse("a -> b"),
-    engine.parse("a"),
+    Expr.parse("a -> b"),
+    Expr.parse("a"),
 ]
 
-a = engine.var("a")
-b = engine.var("b")
+a = Expr.var("a")
+b = Expr.var("b")
 
 raw_cnf = engine.cnf_from_arr([[a, b], [a, b.negated()]])
 new_cnf = engine.condition(a, Bool.T)
-
 
 conclusion = engine.parse("b")
 
