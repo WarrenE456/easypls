@@ -10,11 +10,9 @@ Minimum viable product TODO:
 
 [X] Tseiten transformation
 
-[] Expr parsing:
+[X] Expr parsing:
 
-    [] Operators: and, or, not, (core) xor, nor, nand, if, iff (built on core)
-    [] Global variables storing booleans and subexprs
-
+    [X] Operators: and, or, not, (core) xor, nor, nand, if, iff (built on core)
 
 [] Expr evaluation
 
@@ -61,7 +59,7 @@ engine = Engine()
 x = engine.def("x", True)
 
 # Expr parsing and evaulation
-expr = Expr.from("x or x")
+expr = Expr.parse("x or x")
 print(engine.eval(expr))                            # Prints "True"
 
 # Logical equivilace checking
