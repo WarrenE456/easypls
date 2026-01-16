@@ -10,6 +10,7 @@ mod parser;
 use pyo3::prelude::*;
 #[pymodule]
 mod easypls {
+    use pyo3::exceptions::PyException;
     use pyo3::prelude::*;
 
     use crate::cnf::CNF;
@@ -75,6 +76,12 @@ mod easypls {
         #[pyo3(name="Var")]
         fn var(name: String) -> PyResult<PyExpr> {
             Ok(PyExpr::new(Expr::Var(name)))
+        }
+
+        #[staticmethod]
+        fn parse(src: String) -> PyResult<PyExpr> {
+            let expr = Expr::parse(src.as_bytes()).map_err(|msg| PyException::new_err(msg))?;
+            Ok(PyExpr::new(expr))
         }
 
         fn tseitin(&self) -> PyCNF {

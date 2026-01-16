@@ -1,7 +1,6 @@
 use crate::cnf::*;
 use crate::expr::*;
 use crate::lexer::*;
-use crate::parser::*;
 
 #[test]
 fn unit_propigation() {
