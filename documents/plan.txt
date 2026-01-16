@@ -6,12 +6,13 @@ Minimum viable product TODO:
     [] (optional) 2-SAT polynomial time algorithm?
     [] (optional) conflict driven?
 
+[] Tseiten transformation
+
 [] Expr parsing:
 
-    [] Operators: and, or, not, xor, nor, nand, if, iff
+    [] Operators: and, or, not, (core) xor, nor, nand, if, iff (built on core)
     [] Global variables storing booleans and subexprs
 
-[] Tseiten transformation
 
 [] Expr evaluation
 
@@ -33,6 +34,8 @@ Not quite part of MVP TODO:
 Maybe in future TODO:
 
 [] Term rewritting/expr simplification
+
+engine.gen_truth_table(engine.parse("x or y"))
 
 
 Implementation plan:

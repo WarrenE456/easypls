@@ -4,11 +4,15 @@ mod tests;
 use pyo3::prelude::*;
 
 
+
 #[pymodule]
 pub mod easypls {
     use pyo3::prelude::*;
-    use std::cell::RefCell;
 
+    use std::cell::RefCell;
+    use std::collections::HashMap;
+
+    #[derive(Clone)]
     pub enum Expr {
         And(And),
         Or(Or),
@@ -18,9 +22,9 @@ pub mod easypls {
 
     impl Expr {
         // Converts expression into an CNF via the tseintein transformation
-        pub fn into_cnf(&self) -> CNF {
+        pub fn to_cnf(&self) -> CNF {
             let mut cnf = CNF::new(Vec::new(), Vec::new());
-            let id = cnf.gen_var() as isize;
+            let id = cnf.gen_var(self) as isize;
 
             let cnf_refcell = RefCell::new(cnf);
             self.tseitin(id, &cnf_refcell);
@@ -36,8 +40,8 @@ pub mod easypls {
             match self {
                 Expr::Var(name) => self.sub_var_name(name.clone(), id as usize, cnf),
                 Expr::Or(or) => or.tseitin(id, cnf),
-                Expr::And(_) => todo!(),
-                Expr::Not(_) => todo!(),
+                Expr::And(and) => and.tseitin(id, cnf),
+                Expr::Not(not) => not.tseitin(id, cnf),
             }
         }
 
@@ -45,8 +49,24 @@ pub mod easypls {
         pub fn sub_var_name(&self, name: String, id: usize, cnf: &RefCell<CNF>) {
             cnf.borrow_mut().set_symbol_name(id, name);
         }
+
+        // Create "and" expression
+        pub fn and(l: Expr, r: Expr) -> Expr {
+            Expr::And(And::new(Box::new(l), Box::new(r)))
+        }
+
+        // Create "or" expression
+        pub fn or(l: Expr, r: Expr) -> Expr {
+            Expr::Or(Or::new(Box::new(l), Box::new(r)))
+        }
+
+        // Create "not" expression
+        pub fn not(subexpr: Expr) -> Expr {
+            Expr::Not(Not::new(Box::new(subexpr)))
+        }
     }
 
+    #[derive(Clone)]
     pub struct And {
         l: Box<Expr>,       // left-hand side
         r: Box<Expr>,       // right-hand side
@@ -56,8 +76,27 @@ pub mod easypls {
         pub fn new(l: Box<Expr>, r: Box<Expr>) -> And {
             And {l, r}
         }
+
+        pub fn tseitin(&self, id: isize, cnf: &RefCell<CNF>) {
+            let (l_id, r_id) = {
+                let mut cnf_ref = cnf.borrow_mut();
+
+                let l_id = cnf_ref.gen_var(&self.l) as isize;
+                let r_id = cnf_ref.gen_var(&self.r) as isize;
+
+                cnf_ref.append_clause(vec![-id, l_id]);
+                cnf_ref.append_clause(vec![-id, r_id]);
+                cnf_ref.append_clause(vec![id, -l_id, -r_id]);
+
+                (l_id, r_id)
+            };
+
+            self.l.tseitin(l_id, cnf);
+            self.r.tseitin(r_id, cnf);
+        }
     }
 
+    #[derive(Clone)]
     pub struct Or {
         l: Box<Expr>,       // left-hand side
         r: Box<Expr>,       // right-hand side
@@ -72,8 +111,8 @@ pub mod easypls {
             let (l_id, r_id) = {
                 let mut cnf_ref = cnf.borrow_mut();
 
-                let l_id = cnf_ref.gen_var() as isize;
-                let r_id = cnf_ref.gen_var() as isize;
+                let l_id = cnf_ref.gen_var(&self.l) as isize;
+                let r_id = cnf_ref.gen_var(&self.r) as isize;
 
                 cnf_ref.append_clause(vec![-id, l_id, r_id]);
                 cnf_ref.append_clause(vec![id, -l_id]);
@@ -87,6 +126,7 @@ pub mod easypls {
         }
     }
 
+    #[derive(Clone)]
     pub struct Not {
         expr: Box<Expr>
     }
@@ -94,6 +134,21 @@ pub mod easypls {
     impl Not {
         pub fn new(expr: Box<Expr>) -> Not {
             Not { expr }
+        }
+
+        pub fn tseitin(&self, id: isize, cnf: &RefCell<CNF>) {
+            let subexpr_id = {
+                let mut cnf_ref = cnf.borrow_mut();
+
+                let subexpr_id = cnf_ref.gen_var(&self.expr) as isize;
+
+                cnf_ref.append_clause(vec![-id, -subexpr_id]);
+                cnf_ref.append_clause(vec![id, subexpr_id]);
+
+                subexpr_id
+            };
+
+            self.expr.tseitin(subexpr_id, cnf);
         }
     }
 
@@ -104,6 +159,9 @@ pub mod easypls {
         // Symbol_table[id - 1] represents symbol of variable with id
         // We define it this way because 0 isn't distict from -0
         symbol_table: Vec<String>,
+
+        // Maps variable name to ID
+        name_to_id: HashMap<String, usize>, 
 
         // Outer list represents conjunction of inner lists which
         // represent disjunctions of variables, represented by their ids
@@ -116,8 +174,20 @@ pub mod easypls {
     }
 
     impl CNF {
-        // Geterate intermediate variable and return its id
-        fn gen_var(&mut self) -> usize {
+        // Geterate intermediate variable for expression and return its id
+        fn gen_var(&mut self, expr: &Expr) -> usize {
+            // Handle simple variable
+            if let Expr::Var(name) = expr {
+                if let Some(id) = self.name_to_id.get(name) {
+                    return *id;
+                } else {
+                    let id = self.add_variable(name.clone());
+                    self.name_to_id.insert(name.clone(), id);
+                    return id;
+                }
+            }
+
+            // Handle sub-expression
             let name = format!("${}", self.counter);
             self.counter += 1;
 
@@ -127,7 +197,7 @@ pub mod easypls {
         }
 
         pub fn set_symbol_name(&mut self, id: usize, name: String) {
-            self.symbol_table[id] = name;
+            self.symbol_table[id - 1] = name;
         }
 
         // Add variabel and returns its id
@@ -135,7 +205,7 @@ pub mod easypls {
             let id = self.symbol_table.len();
             self.symbol_table.push(name);
 
-            id
+            id + 1
         }
 
         pub fn append_clause(&mut self, clause: Vec<isize>) {
@@ -153,7 +223,7 @@ pub mod easypls {
         }
 
         pub fn new(symbol_table: Vec<String>, clauses: Vec<Vec<isize>>) -> CNF {
-            CNF { symbol_table, clauses, counter: 0 }
+            CNF { symbol_table, clauses, counter: 0, name_to_id: HashMap::new() }
         }
 
         pub fn get_clauses_clone(&self) -> Vec<Vec<isize>> {
@@ -162,7 +232,7 @@ pub mod easypls {
 
         // Create new CNF with same symbol table
         pub fn from_self(&self, clauses: Vec<Vec<isize>>) -> CNF {
-            CNF { symbol_table: self.symbol_table.clone(), clauses, counter: 0 }
+            CNF { symbol_table: self.symbol_table.clone(), clauses, counter: 0, name_to_id: HashMap::new() }
         }
 
         // Return a CNF after conditioning on some variable target
