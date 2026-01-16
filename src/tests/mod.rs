@@ -56,7 +56,7 @@ fn tseitin() {
 
 #[test]
 fn lex() {
-    let bytes = "T F _TF 9abc_ ()and or not nor nand xor -><->".as_bytes();
+    let bytes = "T F _TF 9abc_ (h)and or not nor nand xor -><->".as_bytes();
     let mut lexer = Lexer::new(bytes).unwrap();
     assert_eq!(lexer.lex_all().unwrap(), vec![
         Tok::T,
@@ -64,6 +64,7 @@ fn lex() {
         Tok::Identifier(String::from("_TF")),
         Tok::Identifier(String::from("9abc_")),
         Tok::LPAREN,
+        Tok::Identifier(String::from("h")),
         Tok::RPAREN,
         Tok::And,
         Tok::Or,
@@ -84,5 +85,16 @@ fn lex() {
 fn parse() {
     let a = Expr::Var(String::from("a"));
     let b = Expr::Var(String::from("b"));
-    assert_eq!(Expr::parse("a and b".as_bytes()).unwrap(), Expr::and(a, b))
+    let c = Expr::Var(String::from("c"));
+    let expected = Expr::iff(
+        Expr::eif(
+            Expr::xor(
+                Expr::nand(a.clone(), Expr::or(Expr::and(Expr::nor(a, Expr::not(b.clone())), b.clone()), c.clone())),
+                c.clone()
+            ),
+            b
+        ),
+        c
+    );
+    assert_eq!(Expr::parse("a nand (a nor not b and b or c) xor c -> b <-> c".as_bytes()).unwrap(), expected)
 }

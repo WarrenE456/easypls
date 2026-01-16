@@ -93,24 +93,32 @@ impl<'a> Parser<'a> {
     }
 
     fn not_compound(&mut self) -> Result<Expr, String> {
-        let l = self.not()?;
+        let mut expr = self.not()?;
 
-        let peek = self.lexer.peek_tok()?;
-        if peek == Tok::Nand {
-            Ok(Expr::nand(l, self.not_compound()?))
+        loop {
+            match self.lexer.peek_tok()? {
+                Tok::Nand => {
+                    self.lexer.advance_tok()?;
+                    let r = self.not()?;
+                    expr = Expr::nand(expr, r);
+                }
+                Tok::Nor => {
+                    self.lexer.advance_tok()?;
+                    let r = self.not()?;
+                    expr = Expr::nor(expr, r);
+                }
+                _ => break,
+            }
         }
-        else if peek == Tok::Nor {
-            Ok(Expr::nor(l, self.not_compound()?))
-        } else {
-            Ok(l)
-        }
+
+        Ok(expr)
     }
 
     fn not(&mut self) -> Result<Expr, String> {
         if self.is_match(Tok::Not)? {
-            Ok(Expr::not(self.atom()?))
+            Ok(Expr::not(self.group()?))
         } else {
-            self.atom()
+            self.group()
         }
     }
 
@@ -129,11 +137,13 @@ impl<'a> Parser<'a> {
     }
 
     fn atom(&mut self) -> Result<Expr, String> {
-        match self.lexer.advance_tok()? {
+        match &self.lexer.advance_tok()? {
             Tok::T => todo!(),
             Tok::F => todo!(),
-            Tok::Identifier(name) => Ok(Expr::Var(name)),
-            _ => Err(format!("Expected literal or identifier, found '{}'", self.lexer.peek_tok()?.to_string())),
+            Tok::Identifier(name) => Ok(Expr::Var(name.clone())),
+            t => {
+                Err(format!("Expected literal or identifier, found '{}'", t.to_string()))
+            }
         }
     }
 }
