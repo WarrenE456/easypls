@@ -5,6 +5,7 @@ mod expr;
 mod cnf;
 mod lexer;
 mod parser;
+mod vm;
 
 // Python API
 use pyo3::prelude::*;
@@ -49,6 +50,11 @@ mod easypls {
 
     #[pymethods]
     impl PyExpr {
+        #[classattr]
+        const T: PyExpr = PyExpr { expr: Expr::Literal(true) };
+        #[classattr]
+        const F: PyExpr = PyExpr { expr: Expr::Literal(false) };
+
         #[staticmethod]
         #[pyo3(name="And")]
         fn and(l: Bound<'_, PyExpr>, r: Bound<'_, PyExpr>) -> PyResult<PyExpr> {

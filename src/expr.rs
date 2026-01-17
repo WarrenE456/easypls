@@ -9,6 +9,7 @@ pub enum Expr {
     And(And),
     Or(Or),
     Not(Not),
+    Literal(bool),
     Var(String),
 }
 
@@ -22,7 +23,8 @@ impl Expr {
     pub fn tseitin(&self) -> CNF {
         let mut cnf = CNF::new(Vec::new(), Vec::new());
         let id = cnf.gen_var(self) as isize;
-        cnf.append_clause(vec![id]);
+
+        cnf.enforce(id, true);       // Enforces that the entire expression is true
 
         let cnf_refcell = RefCell::new(cnf);
         self.tseitin_aux(id, &cnf_refcell);
@@ -37,6 +39,7 @@ impl Expr {
     pub fn tseitin_aux(&self, id: isize, cnf: &RefCell<CNF>) {
         match self {
             Expr::Var(name) => self.sub_var_name(name.clone(), id as usize, cnf),
+            Expr::Literal(value) => cnf.borrow_mut().enforce(id, *value),
             Expr::Or(or) => or.tseitin(id, cnf),
             Expr::And(and) => and.tseitin(id, cnf),
             Expr::Not(not) => not.tseitin(id, cnf),

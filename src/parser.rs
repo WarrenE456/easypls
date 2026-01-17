@@ -138,8 +138,8 @@ impl<'a> Parser<'a> {
 
     fn atom(&mut self) -> Result<Expr, String> {
         match &self.lexer.advance_tok()? {
-            Tok::T => todo!(),
-            Tok::F => todo!(),
+            Tok::T => Ok(Expr::Literal(true)),
+            Tok::F => Ok(Expr::Literal(false)),
             Tok::Identifier(name) => Ok(Expr::Var(name.clone())),
             t => {
                 Err(format!("Expected literal or identifier, found '{}'", t.to_string()))

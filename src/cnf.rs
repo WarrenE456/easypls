@@ -29,6 +29,11 @@ impl CNF {
         self.dpll(1)
     }
 
+    // Enforce a certain variable to be either true or false
+    pub fn enforce(&mut self, id: isize, value: bool) {
+        self.clauses.push(vec![id * if value { 1 } else { -1 }])
+    }
+
     // Geterate intermediate variable for expression and return its id
     pub fn gen_var(&mut self, expr: &Expr) -> usize {
         // Handle simple variable
