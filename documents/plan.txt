@@ -14,7 +14,7 @@ Minimum viable product TODO:
 
     [X] Operators: and, or, not, (core) xor, nor, nand, if, iff (built on core)
 
-[] Expr evaluation
+[X] Expr evaluation
 
 [] Truth table generation
 
