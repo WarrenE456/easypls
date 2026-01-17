@@ -146,3 +146,24 @@ fn vm() {
 
     assert!(!vm.run().unwrap());
 }
+
+#[test]
+fn compilation() {
+    let mut env = Env::new();
+    env.define(String::from("a"), true);
+    env.define(String::from("b"), false);
+    
+    let expr = Expr::parse("(a xor b) and not b".as_bytes()).unwrap();
+    let mut vm = VM::new(&mut env, expr.compile());
+    assert!(vm.run().unwrap());
+
+    let expr = Expr::parse("(a nand a) nor b".as_bytes()).unwrap();
+    let mut vm = VM::new(&mut env, expr.compile());
+
+    assert!(vm.run().unwrap());
+
+    let expr = Expr::parse("not (T -> F) <-> F".as_bytes()).unwrap();
+    let mut vm = VM::new(&mut env, expr.compile());
+
+    assert!(!vm.run().unwrap());
+}

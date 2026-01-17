@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use crate::cnf::CNF;
 use crate::lexer::Lexer;
 use crate::parser::Parser;
+use crate::runtime::vm::OpCode;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[allow(dead_code)]
@@ -76,9 +77,9 @@ impl Expr {
         Expr::and(Expr::eif(l.clone(), r.clone()), Expr::eif(r, l))
     }
 
-    // Create "iff" expression
+    // Create "xor" expression
     pub fn xor(l: Expr, r: Expr) -> Expr {
-        Expr::and(Expr::or(l.clone(), r.clone()), Expr::eif(Expr::not(r), Expr::not(l)))
+        Expr::and(Expr::or(l.clone(), r.clone()), Expr::not(Expr::and(l, r)))
     }
 
     // Create "nand" expression
@@ -89,6 +90,37 @@ impl Expr {
     // Create "nor" expression
     pub fn nor(l: Expr, r: Expr) -> Expr {
         Expr::not(Expr::or(l, r))
+    }
+
+    pub fn compile(&self) -> Vec<OpCode> {
+        let mut codes = Vec::new();
+        self.compile_aux(&mut codes);
+        codes
+    }
+
+    fn compile_aux(&self, codes: &mut Vec<OpCode>) {
+        match self {
+            Expr::Not(not) => {
+                not.expr.compile_aux(codes);
+                codes.push(OpCode::Not);
+            }
+            Expr::And(and) => {
+                and.l.compile_aux(codes);
+                and.r.compile_aux(codes);
+                codes.push(OpCode::And);
+            }
+            Expr::Or(and) => {
+                and.l.compile_aux(codes);
+                and.r.compile_aux(codes);
+                codes.push(OpCode::Or);
+            }
+            Expr::Literal(b) => {
+                codes.push(if *b { OpCode::T } else { OpCode::F });
+            }
+            Expr::Var(name) => {
+                codes.push(OpCode::Load(name.clone()));
+            }
+        }
     }
 }
 

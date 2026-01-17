@@ -13,6 +13,10 @@ impl Env {
         self.identifier_to_value.insert(identifier, value);
     }
 
+    pub fn undefine(&mut self, identifier: &String) {
+        self.identifier_to_value.remove(identifier);
+    }
+
     pub fn get(&mut self, identifier: &String) -> Option<bool> {
         self.identifier_to_value
             .get(identifier)
