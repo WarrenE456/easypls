@@ -55,6 +55,19 @@ mod easypls {
         #[classattr]
         const F: PyExpr = PyExpr { expr: Expr::Literal(false) };
 
+        // TODO test
+        pub fn is_tautology(&self) -> bool {
+            !Expr::not(self.expr.clone()).tseitin().is_sat()
+        }
+
+        pub fn is_contradiction(&self) -> bool {
+            !self.expr.clone().tseitin().is_sat()
+        }
+
+        pub fn logically_eq(&self, other: &PyExpr) -> bool {
+            !Expr::not(Expr::eif(self.expr.clone(), other.expr.clone())).tseitin().is_sat()
+        }
+
         #[staticmethod]
         #[pyo3(name="And")]
         fn and(l: Bound<'_, PyExpr>, r: Bound<'_, PyExpr>) -> PyResult<PyExpr> {
