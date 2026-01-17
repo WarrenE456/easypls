@@ -1,6 +1,7 @@
 use crate::cnf::*;
 use crate::expr::*;
 use crate::lexer::*;
+use crate::runtime::{ vm::*, env::* };
 
 #[test]
 fn unit_propigation() {
@@ -96,4 +97,52 @@ fn parse() {
         c
     );
     assert_eq!(Expr::parse("a nand (a nor not b and b or c) xor c -> b <-> c".as_bytes()).unwrap(), expected)
+}
+
+#[test]
+fn vm() {
+    use OpCode::*;
+
+    let mut env = Env::new();
+    env.define(String::from("a"), true);
+    env.define(String::from("b"), false);
+    
+    let mut vm = VM::new(&mut env, vec![
+        Load(String::from("a")),
+        T,
+        And,
+    ]);
+
+    assert!(vm.run().unwrap());
+    
+    let mut vm = VM::new(&mut env, vec![
+        Load(String::from("a")),
+        Not,
+    ]);
+
+    assert!(!vm.run().unwrap());
+
+    let mut vm = VM::new(&mut env, vec![
+        Load(String::from("a")),
+        Load(String::from("b")),
+        Or,
+    ]);
+
+    assert!(vm.run().unwrap());
+
+    let mut vm = VM::new(&mut env, vec![
+        Load(String::from("c")),
+    ]);
+
+    assert!(vm.run().is_err());
+
+    let mut vm = VM::new(&mut env, vec![
+        T,
+        F,
+        Or,
+        F,
+        And,
+    ]);
+
+    assert!(!vm.run().unwrap());
 }

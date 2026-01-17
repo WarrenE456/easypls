@@ -5,7 +5,7 @@ mod expr;
 mod cnf;
 mod lexer;
 mod parser;
-mod vm;
+mod runtime;
 
 // Python API
 use pyo3::prelude::*;
