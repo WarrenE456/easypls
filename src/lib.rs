@@ -94,4 +94,33 @@ mod easypls {
             PyCNF::new(self.expr.tseitin())
         }
     }
+
+    use crate::runtime::{vm::VM, env::Env};
+    #[pyclass(name="Engine")]
+    pub struct PyEngine {
+        env: Env,
+    }   
+
+    #[pymethods]
+    impl PyEngine {
+        #[new]
+        fn new() -> PyEngine {
+            PyEngine { env: Env::new() }
+        }
+
+        fn define(&mut self, name: String, val: bool) {
+            self.env.define(name, val);
+        }
+
+        fn undefine(&mut self, name: String) {
+            self.env.undefine(&name);
+        }
+
+        fn eval(&mut self, expr: Bound<'_, PyExpr>) -> PyResult<bool> {
+            let expr = expr.extract::<PyExpr>().unwrap();
+            let mut vm = VM::new(&mut self.env, expr.expr.compile());
+
+            vm.run().map_err(|msg| PyException::new_err(msg))
+        }
+    }
 }
