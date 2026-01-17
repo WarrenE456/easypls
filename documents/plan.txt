@@ -23,13 +23,13 @@ Not quite part of MVP TODO:
 
 [] Free with SAT solver:
     
-    [] Tautology checker
-    [] Contradiction checker
-    [] Logical equivalence
+    [X] Tautology checker
+    [X] Contradiction checker
+    [X] Logical equivalence
     [] Argument checking
     [] Maybe CNF/DNF/other conversation?
 
-[] Explict expr building from other exprs
+[X] Explict expr building from other exprs
     - Engine.or, Engine.and, ...
 
 Maybe in future TODO:
