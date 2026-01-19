@@ -136,4 +136,10 @@ mod easypls {
             vm.run().map_err(|msg| PyException::new_err(msg))
         }
     }
+
+    #[pyfunction]
+    fn truth_table(prop: String) -> PyResult<()> {
+        Expr::truth_table(prop)
+            .map_err(|msg| PyException::new_err(msg))
+    }
 }

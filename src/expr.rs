@@ -1,5 +1,8 @@
+use std::collections::HashSet;
 use std::cell::RefCell;
+
 use crate::cnf::CNF;
+use crate::runtime::{env::Env, vm::VM};
 use crate::lexer::Lexer;
 use crate::parser::Parser;
 use crate::runtime::vm::OpCode;
@@ -18,6 +21,70 @@ pub enum Expr {
 impl Expr {
     pub fn parse(src: &[u8]) -> Result<Expr, String> {
         Parser::from(Lexer::new(src)?).statement()
+    }
+
+    pub fn get_variables_aux(&self, vars: &mut HashSet<String>) {
+        use Expr::*;
+        match self {
+            And(and) => {
+                and.l.get_variables_aux(vars);
+                and.r.get_variables_aux(vars);
+            }
+            Or(or) => {
+                or.l.get_variables_aux(vars);
+                or.r.get_variables_aux(vars);
+            }
+            Not(not) => {
+                not.expr.get_variables_aux(vars);
+            }
+            Literal(_) => {}
+            Var(name) => {
+                vars.insert(name.clone());
+            }
+        }
+    }
+
+    pub fn get_variables(&self) -> Vec<String> {
+        let mut vars = HashSet::new();
+        self.get_variables_aux(&mut vars);
+
+        vars.into_iter().collect::<Vec<_>>()
+    }
+
+    fn truth_table_aux(expr: &Vec<OpCode>, i: usize, vars: &Vec<String>, env: &mut Env) {
+        if i >= vars.len() {
+            let result = if VM::new(env, expr.clone()).run().unwrap() {
+                "T"
+            } else {
+                "F"
+            };
+
+            let vars_list = vars.iter()
+                .map(|var| format!("{}={}", var, env.get(var).unwrap()))
+                .collect::<Vec<_>>()
+                .join(", ");
+
+            println!("{vars_list}: {result}");
+            return;
+        }
+
+        let var = vars[i].clone();
+
+        env.define(var.clone(), false);
+        Self::truth_table_aux(expr, i + 1, vars, env);
+
+        env.define(var.clone(), true);
+        Self::truth_table_aux(expr, i + 1, vars, env);
+    }
+
+    pub fn truth_table(prop: String) -> Result<(), String> {
+        println!("{prop}:");
+        let expr = Expr::parse(prop.as_bytes())?;
+        let vars = expr.get_variables();
+
+        let mut env = Env::new();
+        Self::truth_table_aux(&expr.compile(), 0, &vars, &mut env);
+        Ok(())
     }
 
     // Converts expression into an equisatisfyable CNF via the tseitin transformation

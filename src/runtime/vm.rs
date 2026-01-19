@@ -1,6 +1,6 @@
 use super::env::Env;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum OpCode {
     Load(String),
     T,
