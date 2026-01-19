@@ -60,7 +60,7 @@ impl Expr {
             };
 
             let vars_list = vars.iter()
-                .map(|var| format!("{}={}", var, env.get(var).unwrap()))
+                .map(|var| format!("{}={}", var, if env.get(var).unwrap() { "T" } else { "F" }))
                 .collect::<Vec<_>>()
                 .join(", ");
 
