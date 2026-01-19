@@ -16,18 +16,17 @@ Minimum viable product TODO:
 
 [X] Expr evaluation
 
-[] Truth table generation
+[X] Truth table generation
 
 
 Not quite part of MVP TODO:
 
-[] Free with SAT solver:
+[X] Free with SAT solver:
     
     [X] Tautology checker
     [X] Contradiction checker
     [X] Logical equivalence
-    [] Argument checking
-    [] Maybe CNF/DNF/other conversation?
+    [X] Argument checking
 
 [X] Explict expr building from other exprs
     - Engine.or, Engine.and, ...
