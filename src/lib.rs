@@ -64,7 +64,7 @@ mod easypls {
         }
 
         pub fn is_logically_eq(&self, other: &PyExpr) -> bool {
-            !Expr::not(Expr::eif(self.expr.clone(), other.expr.clone())).tseitin().is_sat()
+            !Expr::not(Expr::iff(self.expr.clone(), other.expr.clone())).tseitin().is_sat()
         }
 
         #[staticmethod]
@@ -94,6 +94,46 @@ mod easypls {
         #[pyo3(name="Var")]
         fn var(name: String) -> PyResult<PyExpr> {
             Ok(PyExpr::new(Expr::Var(name)))
+        }
+
+        #[staticmethod]
+        #[pyo3(name="If")]
+        fn eif(l: Bound<'_, PyExpr>, r: Bound<'_, PyExpr>) -> PyResult<PyExpr> {
+            let l= l.extract::<PyExpr>()?.expr;
+            let r = r.extract::<PyExpr>()?.expr;
+            Ok(PyExpr::new(Expr::eif(l, r)))
+        }
+
+        #[staticmethod]
+        #[pyo3(name="Iff")]
+        fn iff(l: Bound<'_, PyExpr>, r: Bound<'_, PyExpr>) -> PyResult<PyExpr> {
+            let l= l.extract::<PyExpr>()?.expr;
+            let r = r.extract::<PyExpr>()?.expr;
+            Ok(PyExpr::new(Expr::iff(l, r)))
+        }
+
+        #[staticmethod]
+        #[pyo3(name="xor")]
+        fn xor(l: Bound<'_, PyExpr>, r: Bound<'_, PyExpr>) -> PyResult<PyExpr> {
+            let l= l.extract::<PyExpr>()?.expr;
+            let r = r.extract::<PyExpr>()?.expr;
+            Ok(PyExpr::new(Expr::xor(l, r)))
+        }
+
+        #[staticmethod]
+        #[pyo3(name="nand")]
+        fn nand(l: Bound<'_, PyExpr>, r: Bound<'_, PyExpr>) -> PyResult<PyExpr> {
+            let l= l.extract::<PyExpr>()?.expr;
+            let r = r.extract::<PyExpr>()?.expr;
+            Ok(PyExpr::new(Expr::nand(l, r)))
+        }
+
+        #[staticmethod]
+        #[pyo3(name="nor")]
+        fn nor(l: Bound<'_, PyExpr>, r: Bound<'_, PyExpr>) -> PyResult<PyExpr> {
+            let l= l.extract::<PyExpr>()?.expr;
+            let r = r.extract::<PyExpr>()?.expr;
+            Ok(PyExpr::new(Expr::nor(l, r)))
         }
 
         #[staticmethod]
