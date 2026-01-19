@@ -1,5 +1,5 @@
 # EasyPLS
-An easy and readable positional logic system for Python. EasyPLS is not on PyPI at the moment, so you will need to clone the repo and build it using Maturin. Then `import easypls` into any Python project.
+An easy and readable positional logic system for Python. To install it, just run `pip install easypls`.
 
 ## Expressions
 Expressions can be created in two ways: by building them from objects or by parsing them from a string.
