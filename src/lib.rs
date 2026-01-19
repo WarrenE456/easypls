@@ -55,7 +55,6 @@ mod easypls {
         #[classattr]
         const F: PyExpr = PyExpr { expr: Expr::Literal(false) };
 
-        // TODO test
         pub fn is_tautology(&self) -> bool {
             !Expr::not(self.expr.clone()).tseitin().is_sat()
         }
@@ -64,18 +63,18 @@ mod easypls {
             !self.expr.clone().tseitin().is_sat()
         }
 
-        pub fn logically_eq(&self, other: &PyExpr) -> bool {
+        pub fn is_logically_eq(&self, other: &PyExpr) -> bool {
             !Expr::not(Expr::eif(self.expr.clone(), other.expr.clone())).tseitin().is_sat()
         }
 
         #[staticmethod]
-        pub fn is_valid_argument(args: Vec<PyExpr>, conclusion: PyExpr) -> bool {
-            let args_conjunction = args.into_iter()
+        pub fn is_valid_argument(premises: Vec<PyExpr>, conclusion: PyExpr) -> bool {
+            let premises_conjunction = premises.into_iter()
                 .map(|pyexpr| pyexpr.expr.clone())
                 .reduce(|acc, expr| Expr::and(acc, expr))
                 .unwrap_or(Expr::Literal(true));
 
-            PyExpr::new(Expr::eif(args_conjunction, conclusion.expr)).is_tautology()
+            PyExpr::new(Expr::eif(premises_conjunction, conclusion.expr)).is_tautology()
         }
 
         #[staticmethod]
@@ -148,7 +147,7 @@ mod easypls {
     }
 
     #[pyfunction]
-    fn truth_table(prop: String) -> PyResult<()> {
+    fn display_truth_table(prop: String) -> PyResult<()> {
         Expr::truth_table(prop)
             .map_err(|msg| PyException::new_err(msg))
     }
