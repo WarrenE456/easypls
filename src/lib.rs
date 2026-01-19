@@ -68,16 +68,6 @@ mod easypls {
         }
 
         #[staticmethod]
-        pub fn is_valid_argument(premises: Vec<PyExpr>, conclusion: PyExpr) -> bool {
-            let premises_conjunction = premises.into_iter()
-                .map(|pyexpr| pyexpr.expr.clone())
-                .reduce(|acc, expr| Expr::and(acc, expr))
-                .unwrap_or(Expr::Literal(true));
-
-            PyExpr::new(Expr::eif(premises_conjunction, conclusion.expr)).is_tautology()
-        }
-
-        #[staticmethod]
         #[pyo3(name="And")]
         fn and(l: Bound<'_, PyExpr>, r: Bound<'_, PyExpr>) -> PyResult<PyExpr> {
             let l= l.extract::<PyExpr>()?.expr;
@@ -151,4 +141,15 @@ mod easypls {
         Expr::truth_table(prop)
             .map_err(|msg| PyException::new_err(msg))
     }
+
+    #[pyfunction]
+    pub fn is_valid_argument(premises: Vec<PyExpr>, conclusion: PyExpr) -> bool {
+        let premises_conjunction = premises.into_iter()
+            .map(|pyexpr| pyexpr.expr.clone())
+            .reduce(|acc, expr| Expr::and(acc, expr))
+            .unwrap_or(Expr::Literal(true));
+
+        PyExpr::new(Expr::eif(premises_conjunction, conclusion.expr)).is_tautology()
+    }
+
 }

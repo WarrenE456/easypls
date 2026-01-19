@@ -12,7 +12,7 @@ premises = [Expr.parse(s) for s in [
 ]]
 
 conclusion = Expr.Var("I")
-valid = Expr.is_valid_argument(premises, conclusion)
+valid = is_valid_argument(premises, conclusion)
 print(f"Is argument 1 valid? {"yes" if valid else "no"}")
 
 premises = [Expr.parse(s) for s in [
@@ -26,5 +26,5 @@ premises = [Expr.parse(s) for s in [
 ]]
 
 conclusion = Expr.Var("H")
-valid = Expr.is_valid_argument(premises, conclusion)
+valid = is_valid_argument(premises, conclusion)
 print(f"Is argument 2 valid? {"yes" if valid else "no"}")
