@@ -9,12 +9,15 @@ fn unit_propigation() {
     let symbol_table = symbol_table;
 
     let cnf = CNF::new(symbol_table.clone(), vec![vec![1], vec![1, -2]]);
-    assert_eq!(cnf.unit_propigation().get_clauses_clone(), Vec::<Vec<isize>>::new());
+    let mut truth_assignment = cnf.gen_empty_truth_assignment();
+
+    assert_eq!(cnf.unit_propigation(&mut truth_assignment).get_clauses_clone(), Vec::<Vec<isize>>::new());
 
 
     let cnf = CNF::new(symbol_table.clone(), vec![vec![-3, 1, 2, 4], vec![-2], vec![3]]);
+    let mut truth_assignment = cnf.gen_empty_truth_assignment();
 
-    assert_eq!(cnf.unit_propigation().get_clauses_clone(), vec![vec![1, 4]]);
+    assert_eq!(cnf.unit_propigation(&mut truth_assignment).get_clauses_clone(), vec![vec![1, 4]]);
 }
 
 #[test]
@@ -23,15 +26,15 @@ fn dpll() {
     let symbol_table = symbol_table;
 
     let cnf = CNF::new(symbol_table.clone(), vec![vec![1], vec![-1]]);
-    assert!(!cnf.is_sat());
+    assert!(!cnf.is_sat().is_some());
 
     // Argument x -> y, x, therefore y
     let cnf = CNF::new(symbol_table.clone(), vec![vec![-1, 2], vec![1], vec![-2]]);
-    assert!(!cnf.is_sat());
+    assert!(!cnf.is_sat().is_some());
 
     // Invalid argument x -> y, y, therefore x
     let cnf = CNF::new(symbol_table.clone(), vec![vec![-1, 2], vec![2], vec![-1]]);
-    assert!(cnf.is_sat());
+    assert!(cnf.is_sat().is_some());
 }
 
 #[test]
@@ -43,7 +46,7 @@ fn tseitin() {
     let expr = Expr::or(Expr::not(Expr::and(a, b)), c);
 
     let cnf = expr.tseitin();
-    assert!(cnf.is_sat());
+    assert!(cnf.is_sat().is_some());
 
     // Expr not (a or b) and a
     let a = Expr::Var(String::from("a"));
@@ -51,7 +54,7 @@ fn tseitin() {
     let expr = Expr::and(Expr::not(Expr::or(a.clone(), b)), a);
 
     let cnf = expr.tseitin();
-    assert!(!cnf.is_sat())
+    assert!(!cnf.is_sat().is_some())
 }
 
 #[test]

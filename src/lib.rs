@@ -30,7 +30,14 @@ mod easypls {
     #[pymethods]
     impl PyCNF {
         fn is_sat(&self) -> bool {
+            self.cnf.clone().is_sat().is_some()
+        }
+
+        fn sat_evidence(&self) -> Option<Vec<bool>> {
             self.cnf.clone().is_sat()
+        }
+        fn get_symbol_table(&self) -> Vec<String> {
+            self.cnf.get_symbol_table()
         }
     }
 
@@ -56,15 +63,18 @@ mod easypls {
         const F: PyExpr = PyExpr { expr: Expr::Literal(false) };
 
         pub fn is_tautology(&self) -> bool {
-            !Expr::not(self.expr.clone()).tseitin().is_sat()
+            !Expr::not(self.expr.clone()).tseitin().is_sat().is_some()
         }
 
         pub fn is_contradiction(&self) -> bool {
-            !self.expr.clone().tseitin().is_sat()
+            !self.expr.clone().tseitin().is_sat().is_some()
         }
 
         pub fn is_logically_eq(&self, other: &PyExpr) -> bool {
-            !Expr::not(Expr::iff(self.expr.clone(), other.expr.clone())).tseitin().is_sat()
+            !Expr::not(Expr::iff(self.expr.clone(), other.expr.clone()))
+                .tseitin()
+                .is_sat()
+                .is_some()
         }
 
         #[staticmethod]

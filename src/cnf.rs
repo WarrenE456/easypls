@@ -25,8 +25,16 @@ pub struct CNF {
 #[allow(dead_code)]
 impl CNF {
     // Checks if the CNF is satisfiable
-    pub fn is_sat(self) -> bool {
-        self.dpll(1)
+    // If the formula is SAT, returns a list of the truth assignments where truth_assignment[i]
+    // is the truth assignment of variable with id i + 1
+    // Otherwise returns Nonesy
+    pub fn is_sat(self) -> Option<Vec<bool>> {
+        let mut truth_assignment = self.gen_empty_truth_assignment();
+        if self.dpll(1, &mut truth_assignment) {
+            Some(truth_assignment)
+        } else {
+            None
+        }
     }
 
     // Enforce a certain variable to be either true or false
@@ -56,6 +64,10 @@ impl CNF {
         id
     }
 
+    pub fn get_symbol_table(&self) -> Vec<String> {
+        self.symbol_table.clone()
+    }
+
     pub fn set_symbol_name(&mut self, id: usize, name: String) {
         self.symbol_table[id - 1] = name;
     }
@@ -66,6 +78,10 @@ impl CNF {
         self.symbol_table.push(name);
 
         id + 1
+    }
+
+    pub fn gen_empty_truth_assignment(&self) -> Vec<bool> {
+         vec![false; self.symbol_table.len()]
     }
 
     pub fn append_clause(&mut self, clause: Vec<isize>) {
@@ -127,10 +143,15 @@ impl CNF {
         false
     }
 
-    pub fn unit_propigation(mut self) -> CNF {
+    pub fn unit_propigation(mut self, truth_assignment: &mut Vec<bool>) -> CNF {
         let mut unit_clause = self.find_unit_clause();
 
         while let Some(clause) = unit_clause {
+            let var_index = (clause.abs() as usize) - 1;
+            let truth_value = clause > 0;
+
+            truth_assignment[var_index] = truth_value;
+ 
             self = self.conditioned(clause);
 
             unit_clause = self.find_unit_clause();
@@ -141,8 +162,8 @@ impl CNF {
 
     // Returns if CNF is satisfiable (using DPLL algorithm), takes the variable we want to condition on
     // TODO undobacktracking instead of cloneing
-    fn dpll(mut self, current: isize) -> bool {
-        self = self.unit_propigation();
+    fn dpll(mut self, current: isize, truth_assignment: &mut Vec<bool>) -> bool {
+        self = self.unit_propigation(truth_assignment);
         // TODO pure literal elimination
 
         if self.clauses.len() == 0 {
@@ -153,6 +174,18 @@ impl CNF {
             return false;
         }
 
-        self.conditioned(current).dpll(current + 1) || self.conditioned(-current).dpll(current + 1)
+        let next_index = current as usize;
+
+        truth_assignment[next_index] = true;
+        if self.conditioned(current).dpll(current + 1, truth_assignment) {
+            return true;
+        }
+
+        truth_assignment[next_index] = false;
+        if self.conditioned(-current).dpll(current + 1, truth_assignment) {
+            return true;
+        }
+
+        false
     }
 }
