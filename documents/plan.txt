@@ -1,11 +1,12 @@
 TODO:
 
-[X] Proof for SAT
-[] Proof for UNSAT
+[X] Proof of SAT for DPLL
 [] Further correctness checking w/ proof
 [] Benchmarking
 [] Backtracking
 [] CDLL
+[] Proof of SAT for CDLL
+[] Proof of UNSAT for CDLL
 [] CNF/expr parsing from file
 [] CNF/Expr helper functions
     [] (TODO)
