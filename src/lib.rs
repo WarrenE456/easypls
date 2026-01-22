@@ -30,11 +30,11 @@ mod easypls {
     #[pymethods]
     impl PyCNF {
         fn is_sat(&self) -> bool {
-            self.cnf.clone().is_sat().is_some()
+            self.cnf.clone().find_evidence().is_some()
         }
 
         fn sat_evidence(&self) -> Option<Vec<bool>> {
-            self.cnf.clone().is_sat()
+            self.cnf.clone().find_evidence()
         }
         fn get_symbol_table(&self) -> Vec<String> {
             self.cnf.get_symbol_table()
@@ -63,17 +63,17 @@ mod easypls {
         const F: PyExpr = PyExpr { expr: Expr::Literal(false) };
 
         pub fn is_tautology(&self) -> bool {
-            !Expr::not(self.expr.clone()).tseitin().is_sat().is_some()
+            !Expr::not(self.expr.clone()).tseitin().find_evidence().is_some()
         }
 
         pub fn is_contradiction(&self) -> bool {
-            !self.expr.clone().tseitin().is_sat().is_some()
+            !self.expr.clone().tseitin().find_evidence().is_some()
         }
 
         pub fn is_logically_eq(&self, other: &PyExpr) -> bool {
             !Expr::not(Expr::iff(self.expr.clone(), other.expr.clone()))
                 .tseitin()
-                .is_sat()
+                .find_evidence()
                 .is_some()
         }
 
@@ -193,7 +193,7 @@ mod easypls {
     }
 
     #[pyfunction]
-    pub fn is_valid_argument(premises: Vec<PyExpr>, conclusion: PyExpr) -> bool {
+    fn is_valid_argument(premises: Vec<PyExpr>, conclusion: PyExpr) -> bool {
         let premises_conjunction = premises.into_iter()
             .map(|pyexpr| pyexpr.expr.clone())
             .reduce(|acc, expr| Expr::and(acc, expr))

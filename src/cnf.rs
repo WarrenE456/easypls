@@ -28,7 +28,7 @@ impl CNF {
     // If the formula is SAT, returns a list of the truth assignments where truth_assignment[i]
     // is the truth assignment of variable with id i + 1
     // Otherwise returns Nonesy
-    pub fn is_sat(self) -> Option<Vec<bool>> {
+    pub fn find_evidence(self) -> Option<Vec<bool>> {
         let mut truth_assignment = self.gen_empty_truth_assignment();
         if self.dpll(1, &mut truth_assignment) {
             Some(truth_assignment)

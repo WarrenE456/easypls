@@ -26,15 +26,15 @@ fn dpll() {
     let symbol_table = symbol_table;
 
     let cnf = CNF::new(symbol_table.clone(), vec![vec![1], vec![-1]]);
-    assert!(!cnf.is_sat().is_some());
+    assert!(!cnf.find_evidence().is_some());
 
     // Argument x -> y, x, therefore y
     let cnf = CNF::new(symbol_table.clone(), vec![vec![-1, 2], vec![1], vec![-2]]);
-    assert!(!cnf.is_sat().is_some());
+    assert!(!cnf.find_evidence().is_some());
 
     // Invalid argument x -> y, y, therefore x
     let cnf = CNF::new(symbol_table.clone(), vec![vec![-1, 2], vec![2], vec![-1]]);
-    assert!(cnf.is_sat().is_some());
+    assert!(cnf.find_evidence().is_some());
 }
 
 #[test]
@@ -46,7 +46,7 @@ fn tseitin() {
     let expr = Expr::or(Expr::not(Expr::and(a, b)), c);
 
     let cnf = expr.tseitin();
-    assert!(cnf.is_sat().is_some());
+    assert!(cnf.find_evidence().is_some());
 
     // Expr not (a or b) and a
     let a = Expr::Var(String::from("a"));
@@ -54,7 +54,7 @@ fn tseitin() {
     let expr = Expr::and(Expr::not(Expr::or(a.clone(), b)), a);
 
     let cnf = expr.tseitin();
-    assert!(!cnf.is_sat().is_some())
+    assert!(!cnf.find_evidence().is_some())
 }
 
 #[test]
@@ -169,4 +169,17 @@ fn compilation() {
     let mut vm = VM::new(&mut env, expr.compile());
 
     assert!(!vm.run().unwrap());
+}
+
+#[test]
+fn sat_evidence() {
+    // TODO
+    // let prop = "(not a and b) or (c xor d) -> 
+    //     (e nand f) and not g <-> 
+    //     (h or i) xor (not j nor k)";
+    //
+    //
+    // let cnf = Expr::parse(prop.as_bytes()).unwrap().tseitin();
+    // println!("{:#?}", cnf.get_symbol_table());
+    // assert!(cnf.find_evidence().is_some())
 }

@@ -1,3 +1,15 @@
+TODO:
+
+[X] Proof for SAT
+[] Proof for UNSAT
+[] Further correctness checking w/ proof
+[] Benchmarking
+[] Backtracking
+[] CDLL
+[] CNF/expr parsing from file
+[] CNF/Expr helper functions
+    [] (TODO)
+
 Minimum viable product TODO:
 
 [X] SAT solver:
