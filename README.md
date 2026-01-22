@@ -1,5 +1,5 @@
 # EasyPLS
-An easy and readable positional logic system for Python. EasyPLS is not on PyPI at the moment, so you will need to clone the repo and build it using Maturin. Then `import easypls` into any Python project.
+An easy and readable positional logic system for Python. To install it, just run `pip install easypls`.
 
 ## Expressions
 Expressions can be created in two ways: by building them from objects or by parsing them from a string.
@@ -26,7 +26,7 @@ engine.define("b", True)
 engine.eval(some_proposition)			# Prints "False"
 ```
 ## SAT Solving
-Many of EasyPLS's features are driven by its SAT-solving capabilities. SAT solving is determining if there is a satisfying assignment (one that makes the proposition true) for a proposition. This problem is at the core of system design, tautology checking, argument verification, and much more. To check if an expression is satisfiable, first turn it into its equisatisfiable conjunctive normal form (CNF) via the Tseitin transformation, then call `is_sat`. For example, we find that `Expr.parse("a or b").tseitin().is_sat()` evaluates to True, whereas `Expr.parse("a and not a").tseitin().is_sat()` evaluates to False.
+Many of EasyPLS's features are driven by its SAT-solving capabilities. SAT solving is determining if there is a satisfying assignment (one that makes the proposition true) for a proposition. This problem is at the core of system design, tautology checking, argument validity checking, and much more. To check if an expression is satisfiable, first turn it into its equisatisfiable conjunctive normal form (CNF) via the Tseitin transformation, then call `is_sat`. For example, we find that `Expr.parse("a or b").tseitin().is_sat()` evaluates to True, whereas `Expr.parse("a and not a").tseitin().is_sat()` evaluates to False.
 
 ### Extensions of SAT Solving
 With SAT solving alone, you can do tautology/contradiction checking, logical equivalence checking, and argument verifying; however, EasyPLS provides built-in methods for all of these things.
