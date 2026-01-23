@@ -54,7 +54,7 @@ impl Expr {
 
     fn truth_table_aux(expr: &Vec<OpCode>, i: usize, vars: &Vec<String>, env: &mut Env) {
         if i >= vars.len() {
-            let result = if VM::new(env, expr.clone()).run().unwrap() {
+            let result = if VM::new(env, expr.clone()).eval().unwrap() {
                 "T"
             } else {
                 "F"
@@ -197,6 +197,21 @@ impl Expr {
                 codes.push(OpCode::Load(name.clone()));
             }
         }
+    }
+
+    pub fn is_valid_sat_proof(&self, proof: &Vec<bool>, symbol_table: &Vec<String>) -> bool {
+        assert_eq!(proof.len(), symbol_table.len());
+
+        let mut env=  Env::new();
+
+        for (idx, val) in proof.iter().enumerate() {
+            let symbol = symbol_table[idx].clone();
+            env.define(symbol, *val);
+        }
+
+        let mut vm = VM::new(&mut env, self.compile());
+
+        vm.eval().unwrap_or(false)
     }
 }
 

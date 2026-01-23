@@ -170,7 +170,7 @@ mod easypls {
     #[pymethods]
     impl PyEngine {
         #[new]
-        fn new() -> PyEngine {
+        pub fn new() -> PyEngine {
             PyEngine { env: Env::new() }
         }
 
@@ -186,7 +186,7 @@ mod easypls {
             let expr = expr.extract::<PyExpr>().unwrap();
             let mut vm = VM::new(&mut self.env, expr.expr.compile());
 
-            vm.run().map_err(|msg| PyException::new_err(msg))
+            vm.eval().map_err(|msg| PyException::new_err(msg))
         }
     }
 

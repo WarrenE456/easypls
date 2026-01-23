@@ -1,7 +1,7 @@
 TODO:
 
 [X] Proof of SAT for DPLL
-[] Further correctness checking w/ proof
+[X] Further correctness checking w/ proof
 [] Benchmarking
 [] Backtracking
 [] CDLL

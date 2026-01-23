@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+
 use crate::expr::Expr;
+use crate::runtime::{ vm::VM, env::Env };
 
 // Representation of a boolean expression in conjunctive normal form
 #[derive(Clone, Debug)]

@@ -64,7 +64,7 @@ impl<'a> VM<'a> {
         Ok(())
     }
 
-    pub fn run(&mut self) -> Result<bool, String> {
+    pub fn eval(&mut self) -> Result<bool, String> {
         while self.cur < self.instructions.len() {
             self.execute_next(self.cur)?;
             self.cur += 1;

@@ -3,6 +3,7 @@ use crate::expr::*;
 use crate::lexer::*;
 use crate::runtime::{ vm::*, env::* };
 
+
 #[test]
 fn unit_propigation() {
     let symbol_table = vec![String::from("x"), String::from("y"), String::from("z"), String::from("w")];
@@ -116,14 +117,14 @@ fn vm() {
         And,
     ]);
 
-    assert!(vm.run().unwrap());
+    assert!(vm.eval().unwrap());
     
     let mut vm = VM::new(&mut env, vec![
         Load(String::from("a")),
         Not,
     ]);
 
-    assert!(!vm.run().unwrap());
+    assert!(!vm.eval().unwrap());
 
     let mut vm = VM::new(&mut env, vec![
         Load(String::from("a")),
@@ -131,13 +132,13 @@ fn vm() {
         Or,
     ]);
 
-    assert!(vm.run().unwrap());
+    assert!(vm.eval().unwrap());
 
     let mut vm = VM::new(&mut env, vec![
         Load(String::from("c")),
     ]);
 
-    assert!(vm.run().is_err());
+    assert!(vm.eval().is_err());
 
     let mut vm = VM::new(&mut env, vec![
         T,
@@ -147,7 +148,7 @@ fn vm() {
         And,
     ]);
 
-    assert!(!vm.run().unwrap());
+    assert!(!vm.eval().unwrap());
 }
 
 #[test]
@@ -158,25 +159,42 @@ fn compilation() {
     
     let expr = Expr::parse("(a xor b) and not b".as_bytes()).unwrap();
     let mut vm = VM::new(&mut env, expr.compile());
-    assert!(vm.run().unwrap());
+    assert!(vm.eval().unwrap());
 
     let expr = Expr::parse("(a nand a) nor b".as_bytes()).unwrap();
     let mut vm = VM::new(&mut env, expr.compile());
 
-    assert!(vm.run().unwrap());
+    assert!(vm.eval().unwrap());
 
     let expr = Expr::parse("not (T -> F) <-> F".as_bytes()).unwrap();
     let mut vm = VM::new(&mut env, expr.compile());
 
-    assert!(!vm.run().unwrap());
+    assert!(!vm.eval().unwrap());
 }
 
 #[test]
 fn sat_evidence() {
     let prop = "(not a and b) or (c xor d) -> (e nand f)";
-    let cnf = Expr::parse(prop.as_bytes()).unwrap().tseitin(false);
+    let expr = Expr::parse(prop.as_bytes()).unwrap();
+    let cnf = expr.tseitin(false);
+    let symbol_table = cnf.get_symbol_table();
+    let proof = cnf.find_evidence().unwrap();
 
-    println!("{:#?}", cnf.get_symbol_table());
-    assert!(cnf.find_evidence().is_some())
+    assert!(expr.is_valid_sat_proof(&proof, &symbol_table));
+
+    let prop = "not (((a or (b and c) <-> d) xor a or (b and c) <-> d) nand e) or not (not f)";
+    let expr = Expr::parse(prop.as_bytes()).unwrap();
+    let cnf = expr.tseitin(false);
+    let symbol_table = cnf.get_symbol_table();
+    let proof = cnf.find_evidence().unwrap();
+
+    assert!(expr.is_valid_sat_proof(&proof, &symbol_table));
+
+    let prop = "(e nand f) and not g <-> (h or i) xor (not j nor k)";
+    let expr = Expr::parse(prop.as_bytes()).unwrap();
+    let cnf = expr.tseitin(false);
+    let symbol_table = cnf.get_symbol_table();
+    let proof = cnf.find_evidence().unwrap();
+
+    assert!(expr.is_valid_sat_proof(&proof, &symbol_table));
 }
-
