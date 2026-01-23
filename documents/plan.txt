@@ -7,6 +7,7 @@ TODO:
 [] CDLL
 [] Proof of SAT for CDLL
 [] Proof of UNSAT for CDLL
+-- New release
 [] CNF/expr parsing from file
 [] CNF/Expr helper functions
     [] (TODO)

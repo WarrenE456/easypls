@@ -1,16 +1,16 @@
 #[cfg(test)]
 mod tests;
 
-mod expr;
-mod cnf;
-mod lexer;
-mod parser;
-mod runtime;
+pub mod expr;
+pub mod cnf;
+pub mod lexer;
+pub mod parser;
+pub mod runtime;
 
 // Python API
 use pyo3::prelude::*;
 #[pymodule]
-mod easypls {
+pub mod easypls {
     use pyo3::exceptions::PyException;
     use pyo3::prelude::*;
 
