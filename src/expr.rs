@@ -30,6 +30,7 @@ impl Expr {
                 and.l.get_variables_aux(vars);
                 and.r.get_variables_aux(vars);
             }
+
             Or(or) => {
                 or.l.get_variables_aux(vars);
                 or.r.get_variables_aux(vars);
@@ -64,7 +65,7 @@ impl Expr {
                 .collect::<Vec<_>>()
                 .join(", ");
 
-            println!("{vars_list}: {result}");
+            print!("{vars_list}: {result}");
             return;
         }
 
@@ -88,14 +89,17 @@ impl Expr {
     }
 
     // Converts expression into an equisatisfyable CNF via the tseitin transformation
-    pub fn tseitin(&self) -> CNF {
+    pub fn tseitin(&self, display: bool) -> CNF {
         let mut cnf = CNF::new(Vec::new(), Vec::new());
         let id = cnf.gen_var(self) as isize;
 
         cnf.enforce(id, true);       // Enforces that the entire expression is true
 
         let cnf_refcell = RefCell::new(cnf);
-        self.tseitin_aux(id, &cnf_refcell);
+        self.tseitin_aux(id, &cnf_refcell, display);
+        if display {
+            println!();
+        }
 
         cnf = cnf_refcell.into_inner();
         cnf
@@ -104,13 +108,18 @@ impl Expr {
     // Performs a Tseitin transformation
     // Takes its own id in the CNF, and a refrence to the CNF which we are building
     // Mutate the CNF rather than returning a value
-    pub fn tseitin_aux(&self, id: isize, cnf: &RefCell<CNF>) {
+    pub fn tseitin_aux(&self, id: isize, cnf: &RefCell<CNF>, display: bool) {
         match self {
             Expr::Var(name) => self.sub_var_name(name.clone(), id as usize, cnf),
-            Expr::Literal(value) => cnf.borrow_mut().enforce(id, *value),
-            Expr::Or(or) => or.tseitin(id, cnf),
-            Expr::And(and) => and.tseitin(id, cnf),
-            Expr::Not(not) => not.tseitin(id, cnf),
+            Expr::Literal(value) => {
+                if display {
+                    print!("{}", if *value { "T" } else { "F" });
+                }
+                cnf.borrow_mut().enforce(id, *value);
+            }
+            Expr::Or(or) => or.tseitin(id, cnf, display),
+            Expr::And(and) => and.tseitin(id, cnf, display),
+            Expr::Not(not) => not.tseitin(id, cnf, display),
         }
     }
 
@@ -202,12 +211,16 @@ impl And {
         And {l, r}
     }
 
-    pub fn tseitin(&self, id: isize, cnf: &RefCell<CNF>) {
+    pub fn tseitin(&self, id: isize, cnf: &RefCell<CNF>, display: bool) {
         let (l_id, r_id) = {
             let mut cnf_ref = cnf.borrow_mut();
 
             let l_id = cnf_ref.gen_var(&self.l) as isize;
             let r_id = cnf_ref.gen_var(&self.r) as isize;
+
+            if display {
+                print!("cnf({} <-> ({} or {}))) ", cnf_ref.from_id(id), cnf_ref.from_id(l_id), cnf_ref.from_id(r_id));
+            }
 
             cnf_ref.append_clause(vec![-id, l_id]);
             cnf_ref.append_clause(vec![-id, r_id]);
@@ -216,8 +229,8 @@ impl And {
             (l_id, r_id)
         };
 
-        self.l.tseitin_aux(l_id, cnf);
-        self.r.tseitin_aux(r_id, cnf);
+        self.l.tseitin_aux(l_id, cnf, display);
+        self.r.tseitin_aux(r_id, cnf, display);
     }
 }
 
@@ -232,12 +245,16 @@ impl Or {
         Or {l, r}
     }
 
-    pub fn tseitin(&self, id: isize, cnf: &RefCell<CNF>) {
+    pub fn tseitin(&self, id: isize, cnf: &RefCell<CNF>, display: bool) {
         let (l_id, r_id) = {
             let mut cnf_ref = cnf.borrow_mut();
 
             let l_id = cnf_ref.gen_var(&self.l) as isize;
             let r_id = cnf_ref.gen_var(&self.r) as isize;
+
+            if display {
+                print!("cnf({} <-> ({} or {}))) ", cnf_ref.from_id(id), cnf_ref.from_id(l_id), cnf_ref.from_id(r_id));
+            }
 
             cnf_ref.append_clause(vec![-id, l_id, r_id]);
             cnf_ref.append_clause(vec![id, -l_id]);
@@ -246,8 +263,8 @@ impl Or {
             (l_id, r_id)
         };
 
-        self.l.tseitin_aux(l_id, cnf);
-        self.r.tseitin_aux(r_id, cnf);
+        self.l.tseitin_aux(l_id, cnf, display);
+        self.r.tseitin_aux(r_id, cnf, display);
     }
 }
 
@@ -261,11 +278,15 @@ impl Not {
         Not { expr }
     }
 
-    pub fn tseitin(&self, id: isize, cnf: &RefCell<CNF>) {
+    pub fn tseitin(&self, id: isize, cnf: &RefCell<CNF>, display: bool) {
         let subexpr_id = {
             let mut cnf_ref = cnf.borrow_mut();
 
             let subexpr_id = cnf_ref.gen_var(&self.expr) as isize;
+
+            if display {
+                print!("cnf({} <-> not {}) ", cnf_ref.from_id(id), cnf_ref.from_id(subexpr_id));
+            }
 
             cnf_ref.append_clause(vec![-id, -subexpr_id]);
             cnf_ref.append_clause(vec![id, subexpr_id]);
@@ -273,6 +294,6 @@ impl Not {
             subexpr_id
         };
 
-        self.expr.tseitin_aux(subexpr_id, cnf);
+        self.expr.tseitin_aux(subexpr_id, cnf, display);
     }
 }

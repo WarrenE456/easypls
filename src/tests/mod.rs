@@ -45,7 +45,7 @@ fn tseitin() {
     let c = Expr::Var(String::from("c"));
     let expr = Expr::or(Expr::not(Expr::and(a, b)), c);
 
-    let cnf = expr.tseitin();
+    let cnf = expr.tseitin(false);
     assert!(cnf.find_evidence().is_some());
 
     // Expr not (a or b) and a
@@ -53,7 +53,7 @@ fn tseitin() {
     let b = Expr::Var(String::from("b"));
     let expr = Expr::and(Expr::not(Expr::or(a.clone(), b)), a);
 
-    let cnf = expr.tseitin();
+    let cnf = expr.tseitin(false);
     assert!(!cnf.find_evidence().is_some())
 }
 
@@ -173,13 +173,10 @@ fn compilation() {
 
 #[test]
 fn sat_evidence() {
-    // TODO
-    // let prop = "(not a and b) or (c xor d) -> 
-    //     (e nand f) and not g <-> 
-    //     (h or i) xor (not j nor k)";
-    //
-    //
-    // let cnf = Expr::parse(prop.as_bytes()).unwrap().tseitin();
-    // println!("{:#?}", cnf.get_symbol_table());
-    // assert!(cnf.find_evidence().is_some())
+    let prop = "(not a and b) or (c xor d) -> (e nand f)";
+    let cnf = Expr::parse(prop.as_bytes()).unwrap().tseitin(false);
+
+    println!("{:#?}", cnf.get_symbol_table());
+    assert!(cnf.find_evidence().is_some())
 }
+

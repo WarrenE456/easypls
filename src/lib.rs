@@ -63,16 +63,16 @@ mod easypls {
         const F: PyExpr = PyExpr { expr: Expr::Literal(false) };
 
         pub fn is_tautology(&self) -> bool {
-            !Expr::not(self.expr.clone()).tseitin().find_evidence().is_some()
+            !Expr::not(self.expr.clone()).tseitin(false).find_evidence().is_some()
         }
 
         pub fn is_contradiction(&self) -> bool {
-            !self.expr.clone().tseitin().find_evidence().is_some()
+            !self.expr.clone().tseitin(false).find_evidence().is_some()
         }
 
         pub fn is_logically_eq(&self, other: &PyExpr) -> bool {
             !Expr::not(Expr::iff(self.expr.clone(), other.expr.clone()))
-                .tseitin()
+                .tseitin(false)
                 .find_evidence()
                 .is_some()
         }
@@ -153,7 +153,11 @@ mod easypls {
         }
 
         fn tseitin(&self) -> PyCNF {
-            PyCNF::new(self.expr.tseitin())
+            PyCNF::new(self.expr.tseitin(false))
+        }
+
+        fn display_tseitin(&self) -> PyCNF {
+            PyCNF::new(self.expr.tseitin(true))
         }
     }
 

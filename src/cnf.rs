@@ -42,6 +42,10 @@ impl CNF {
         self.clauses.push(vec![id * if value { 1 } else { -1 }])
     }
 
+    pub fn from_id(&self, id: isize) -> String {
+        self.symbol_table[id.abs() as usize - 1].clone()
+    }
+
     // Geterate intermediate variable for expression and return its id
     pub fn gen_var(&mut self, expr: &Expr) -> usize {
         // Handle simple variable
