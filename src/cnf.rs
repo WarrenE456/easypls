@@ -217,7 +217,31 @@ impl CNF {
         false
     }
 
-    // fn unit_propigation_set(&self, truth_assignment: &mut Vec<Option<bool>>)
+    pub fn is_unit_clause(clause: &Vec<isize>, truth_assignment: &Vec<Option<bool>>) -> bool {
+        let mut found_undef = false;
+        for var in clause {
+            let value = *var > 0;
+            let idx = var.abs() as usize - 1;
+
+            if truth_assignment[idx].is_none() {
+                if found_undef {            // More than one undefined var
+                    return false;
+                } else {
+                    found_undef = true;
+                }
+            }
+            if let Some(assigned) = truth_assignment[idx] {
+                if assigned == value {      // Entire clause cancles because literal evalues to true
+                    return false;
+                }
+            }
+        }
+        found_undef
+    }
+
+    fn unit_propigation_set(&self, truth_assignment: &mut Vec<Option<bool>>) {
+        todo!()
+    }
 
     // Returns if CNF is satisfiable (using DPLL algorithm), takes the variable we want to condition on
     fn dpll(&mut self, truth_assignment: &mut Vec<Option<bool>>) -> bool {

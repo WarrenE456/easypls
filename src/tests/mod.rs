@@ -207,3 +207,12 @@ fn falsification() {
     assert!(!CNF::is_falsified(&vec![1, 2, 3], &vec![Some(true), Some(true), Some(true)]));
     assert!(CNF::is_falsified(&vec![-1, -2, -3], &vec![Some(true), Some(true), Some(true)]));
 }
+
+#[test]
+fn is_unit_clause() {
+    assert!(CNF::is_unit_clause(&vec![-1, 2, 3], &vec![Some(true), Some(false), None]));
+    assert!(!CNF::is_unit_clause(&vec![1, -2, 3], &vec![Some(true), Some(true), None]));
+    assert!(!CNF::is_unit_clause(&vec![1, -2, 3], &vec![Some(false), Some(true), Some(false)]));
+    assert!(CNF::is_unit_clause(&vec![1, 2, 3], &vec![None, Some(false), Some(false)]));
+    assert!(!CNF::is_unit_clause(&vec![-1, -2, -3], &vec![Some(true), Some(true), Some(true)]));
+}
