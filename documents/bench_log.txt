@@ -32,3 +32,21 @@ small_sat               time:   [212.22 µs 213.91 µs 216.10 µs]
 Found 11 outliers among 100 measurements (11.00%)
   3 (3.00%) high mild
   8 (8.00%) high severe
+
+
+same algo with large sat:
+
+     Running benches/benches.rs (target/release/deps/benches-2c9fcaa56bf4b74a)
+Gnuplot not found, using plotters backend
+small_sat               time:   [217.56 µs 218.82 µs 220.28 µs]
+                        change: [−4.0587% −1.2909% +1.0398%] (p = 0.36 > 0.05)
+                        No change in performance detected.
+Found 4 outliers among 100 measurements (4.00%)
+  4 (4.00%) high severe
+
+Benchmarking large_sat: Warming up for 3.0000 s
+Warning: Unable to complete 100 samples in 5.0s. You may wish to increase target time to 8.9s, enable flat sampling, or reduce sample count to 50.
+large_sat               time:   [1.7513 ms 1.7627 ms 1.7759 ms]
+Found 10 outliers among 100 measurements (10.00%)
+  3 (3.00%) high mild
+  7 (7.00%) high severe
