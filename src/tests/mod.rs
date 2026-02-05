@@ -12,13 +12,13 @@ fn unit_propigation() {
     let cnf = CNF::new(symbol_table.clone(), vec![vec![1], vec![1, -2]]);
     let mut truth_assignment = cnf.gen_empty_truth_assignment();
 
-    assert_eq!(cnf.unit_propigation(&mut truth_assignment).get_clauses_clone(), Vec::<Vec<isize>>::new());
+    assert_eq!(cnf.unit_propigation_old(&mut truth_assignment).get_clauses_clone(), Vec::<Vec<isize>>::new());
 
 
     let cnf = CNF::new(symbol_table.clone(), vec![vec![-3, 1, 2, 4], vec![-2], vec![3]]);
     let mut truth_assignment = cnf.gen_empty_truth_assignment();
 
-    assert_eq!(cnf.unit_propigation(&mut truth_assignment).get_clauses_clone(), vec![vec![1, 4]]);
+    assert_eq!(cnf.unit_propigation_old(&mut truth_assignment).get_clauses_clone(), vec![vec![1, 4]]);
 }
 
 #[test]
@@ -197,4 +197,13 @@ fn sat_evidence() {
     let proof = cnf.find_evidence().unwrap();
 
     assert!(expr.is_valid_sat_proof(&proof, &symbol_table));
+}
+
+#[test]
+fn falsification() {
+    assert!(CNF::is_falsified(&vec![-1, 2, 3], &vec![Some(true), Some(false), Some(false)]));
+    assert!(!CNF::is_falsified(&vec![1, -2, 3], &vec![Some(false), Some(true), None]));
+    assert!(!CNF::is_falsified(&vec![1, -2, 3], &vec![Some(true), Some(false), Some(false)]));
+    assert!(!CNF::is_falsified(&vec![1, 2, 3], &vec![Some(true), Some(true), Some(true)]));
+    assert!(CNF::is_falsified(&vec![-1, -2, -3], &vec![Some(true), Some(true), Some(true)]));
 }

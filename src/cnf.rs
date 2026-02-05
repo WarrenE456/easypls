@@ -31,7 +31,7 @@ impl CNF {
     // Otherwise returns Nonesy
     pub fn find_evidence(self) -> Option<Vec<bool>> {
         let mut truth_assignment = self.gen_empty_truth_assignment();
-        if self.dpll(1, &mut truth_assignment) {
+        if self.dpll_old(1, &mut truth_assignment) {
             Some(truth_assignment)
         } else {
             None
@@ -148,7 +148,7 @@ impl CNF {
         false
     }
 
-    pub fn unit_propigation(mut self, truth_assignment: &mut Vec<bool>) -> CNF {
+    pub fn unit_propigation_old(mut self, truth_assignment: &mut Vec<bool>) -> CNF {
         let mut unit_clause = self.find_unit_clause();
 
         while let Some(clause) = unit_clause {
@@ -166,9 +166,8 @@ impl CNF {
     }
 
     // Returns if CNF is satisfiable (using DPLL algorithm), takes the variable we want to condition on
-    // TODO undobacktracking instead of cloneing
-    fn dpll(mut self, current: isize, truth_assignment: &mut Vec<bool>) -> bool {
-        self = self.unit_propigation(truth_assignment);
+    fn dpll_old(mut self, current: isize, truth_assignment: &mut Vec<bool>) -> bool {
+        self = self.unit_propigation_old(truth_assignment);
         // TODO pure literal elimination
 
         if self.clauses.len() == 0 {
@@ -182,15 +181,49 @@ impl CNF {
         let next_index = current as usize;
 
         truth_assignment[next_index] = true;
-        if self.conditioned(current).dpll(current + 1, truth_assignment) {
+        if self.conditioned(current).dpll_old(current + 1, truth_assignment) {
             return true;
         }
 
         truth_assignment[next_index] = false;
-        if self.conditioned(-current).dpll(current + 1, truth_assignment) {
+        if self.conditioned(-current).dpll_old(current + 1, truth_assignment) {
             return true;
         }
 
         false
+    }
+
+    pub fn is_falsified(clause: &Vec<isize>, truth_assignment: &Vec<Option<bool>>) -> bool {
+        for var in clause {
+            let value = *var > 0;
+            let var_idx = var.abs() as usize - 1;
+            if let Some(assigned) = truth_assignment[var_idx] {
+                if assigned == value {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        true
+    }
+
+    pub fn any_falsified(&self, truth_assignment: &Vec<Option<bool>>) -> bool {
+        for clause in self.clauses.iter() {
+            if Self::is_falsified(clause, truth_assignment) {
+                return true;
+            }
+        }
+        false
+    }
+
+    // fn unit_propigation_set(&self, truth_assignment: &mut Vec<Option<bool>>)
+
+    // Returns if CNF is satisfiable (using DPLL algorithm), takes the variable we want to condition on
+    fn dpll(&mut self, truth_assignment: &mut Vec<Option<bool>>) -> bool {
+        if self.any_falsified(truth_assignment) {
+            return false;
+        }
+        todo!()
     }
 }

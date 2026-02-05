@@ -1,0 +1,10 @@
+unoptimized DPLL:
+
+Running benches/benches.rs (target/release/deps/benches-2c9fcaa56bf4b74a)
+Gnuplot not found, using plotters backend
+Benchmarking small_sat: Warming up for 3.0000 s
+Warning: Unable to complete 100 samples in 5.0s. You may wish to increase target time to 21.6s, or reduce sample count to 20.
+small_sat               time:   [217.59 ms 218.07 ms 218.54 ms]
+                        change: [−0.8726% −0.5348% −0.2186%] (p = 0.00 < 0.05)
+                        Change within noise threshold.
+

@@ -1,4 +1,4 @@
-TODO:
+TODO (main):
 
 [X] Proof of SAT for DPLL
 [X] Further correctness checking w/ proof
@@ -11,6 +11,10 @@ TODO:
 [] CNF/expr parsing from file
 [] CNF/Expr helper functions
     [] (TODO)
+
+TODO (secondary):
+[] Consequence support
+[] Loops
 
 Minimum viable product TODO:
 
