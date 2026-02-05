@@ -8,3 +8,27 @@ small_sat               time:   [217.59 ms 218.07 ms 218.54 ms]
                         change: [−0.8726% −0.5348% −0.2186%] (p = 0.00 < 0.05)
                         Change within noise threshold.
 
+DPLL with partial truth assignment:
+
+running 10 tests
+test tests::compilation ... ignored
+test tests::dpll ... ignored
+test tests::falsification ... ignored
+test tests::implied_assignment ... ignored
+test tests::is_unit_clause ... ignored
+test tests::lex ... ignored
+test tests::parse ... ignored
+test tests::sat_evidence ... ignored
+test tests::tseitin ... ignored
+test tests::vm ... ignored
+
+test result: ok. 0 passed; 0 failed; 10 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running benches/benches.rs (target/release/deps/benches-2c9fcaa56bf4b74a)
+Gnuplot not found, using plotters backend
+small_sat               time:   [212.22 µs 213.91 µs 216.10 µs]
+                        change: [−99.902% −99.900% −99.898%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 11 outliers among 100 measurements (11.00%)
+  3 (3.00%) high mild
+  8 (8.00%) high severe

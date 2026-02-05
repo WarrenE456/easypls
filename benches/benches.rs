@@ -6,7 +6,7 @@ use easypls::expr::Expr;
 pub fn small_sat() {
     let prop = "not (((a or (b and c) <-> d) xor a or (b and c) <-> d) nand e) or not (not f)";
     let expr = Expr::parse(prop.as_bytes()).unwrap();
-    let cnf = expr.tseitin(false);
+    let mut cnf = expr.tseitin(false);
     let _ = cnf.find_evidence();
 }
 

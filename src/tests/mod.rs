@@ -4,37 +4,38 @@ use crate::lexer::*;
 use crate::runtime::{ vm::*, env::* };
 
 
-#[test]
-fn unit_propigation() {
-    let symbol_table = vec![String::from("x"), String::from("y"), String::from("z"), String::from("w")];
-    let symbol_table = symbol_table;
-
-    let cnf = CNF::new(symbol_table.clone(), vec![vec![1], vec![1, -2]]);
-    let mut truth_assignment = cnf.gen_empty_truth_assignment();
-
-    assert_eq!(cnf.unit_propigation_old(&mut truth_assignment).get_clauses_clone(), Vec::<Vec<isize>>::new());
-
-
-    let cnf = CNF::new(symbol_table.clone(), vec![vec![-3, 1, 2, 4], vec![-2], vec![3]]);
-    let mut truth_assignment = cnf.gen_empty_truth_assignment();
-
-    assert_eq!(cnf.unit_propigation_old(&mut truth_assignment).get_clauses_clone(), vec![vec![1, 4]]);
-}
+// not relevant anymore
+// #[test]
+// fn unit_propigation() {
+//     let symbol_table = vec![String::from("x"), String::from("y"), String::from("z"), String::from("w")];
+//     let symbol_table = symbol_table;
+//
+//     let mut cnf = CNF::new(symbol_table.clone(), vec![vec![1], vec![1, -2]]);
+//     let mut truth_assignment = cnf.gen_empty_truth_assignment();
+//
+//     assert_eq!(cnf.unit_propigation_old(&mut truth_assignment).get_clauses_clone(), Vec::<Vec<isize>>::new());
+//
+//
+//     let mut cnf = CNF::new(symbol_table.clone(), vec![vec![-3, 1, 2, 4], vec![-2], vec![3]]);
+//     let mut truth_assignment = cnf.gen_empty_truth_assignment();
+//
+//     assert_eq!(cnf.unit_propigation_old(&mut truth_assignment).get_clauses_clone(), vec![vec![1, 4]]);
+// }
 
 #[test]
 fn dpll() {
     let symbol_table = vec![String::from("x"), String::from("y"), String::from("z")];
     let symbol_table = symbol_table;
 
-    let cnf = CNF::new(symbol_table.clone(), vec![vec![1], vec![-1]]);
+    let mut cnf = CNF::new(symbol_table.clone(), vec![vec![1], vec![-1]]);
     assert!(!cnf.find_evidence().is_some());
 
     // Argument x -> y, x, therefore y
-    let cnf = CNF::new(symbol_table.clone(), vec![vec![-1, 2], vec![1], vec![-2]]);
+    let mut cnf = CNF::new(symbol_table.clone(), vec![vec![-1, 2], vec![1], vec![-2]]);
     assert!(!cnf.find_evidence().is_some());
 
     // Invalid argument x -> y, y, therefore x
-    let cnf = CNF::new(symbol_table.clone(), vec![vec![-1, 2], vec![2], vec![-1]]);
+    let mut cnf = CNF::new(symbol_table.clone(), vec![vec![-1, 2], vec![2], vec![-1]]);
     assert!(cnf.find_evidence().is_some());
 }
 
@@ -46,7 +47,7 @@ fn tseitin() {
     let c = Expr::Var(String::from("c"));
     let expr = Expr::or(Expr::not(Expr::and(a, b)), c);
 
-    let cnf = expr.tseitin(false);
+    let mut cnf = expr.tseitin(false);
     assert!(cnf.find_evidence().is_some());
 
     // Expr not (a or b) and a
@@ -54,7 +55,7 @@ fn tseitin() {
     let b = Expr::Var(String::from("b"));
     let expr = Expr::and(Expr::not(Expr::or(a.clone(), b)), a);
 
-    let cnf = expr.tseitin(false);
+    let mut cnf = expr.tseitin(false);
     assert!(!cnf.find_evidence().is_some())
 }
 
@@ -176,7 +177,7 @@ fn compilation() {
 fn sat_evidence() {
     let prop = "(not a and b) or (c xor d) -> (e nand f)";
     let expr = Expr::parse(prop.as_bytes()).unwrap();
-    let cnf = expr.tseitin(false);
+    let mut cnf = expr.tseitin(false);
     let symbol_table = cnf.get_symbol_table();
     let proof = cnf.find_evidence().unwrap();
 
@@ -184,7 +185,7 @@ fn sat_evidence() {
 
     let prop = "not (((a or (b and c) <-> d) xor a or (b and c) <-> d) nand e) or not (not f)";
     let expr = Expr::parse(prop.as_bytes()).unwrap();
-    let cnf = expr.tseitin(false);
+    let mut cnf = expr.tseitin(false);
     let symbol_table = cnf.get_symbol_table();
     let proof = cnf.find_evidence().unwrap();
 
@@ -192,7 +193,7 @@ fn sat_evidence() {
 
     let prop = "(e nand f) and not g <-> (h or i) xor (not j nor k)";
     let expr = Expr::parse(prop.as_bytes()).unwrap();
-    let cnf = expr.tseitin(false);
+    let mut cnf = expr.tseitin(false);
     let symbol_table = cnf.get_symbol_table();
     let proof = cnf.find_evidence().unwrap();
 
@@ -215,4 +216,14 @@ fn is_unit_clause() {
     assert!(!CNF::is_unit_clause(&vec![1, -2, 3], &vec![Some(false), Some(true), Some(false)]));
     assert!(CNF::is_unit_clause(&vec![1, 2, 3], &vec![None, Some(false), Some(false)]));
     assert!(!CNF::is_unit_clause(&vec![-1, -2, -3], &vec![Some(true), Some(true), Some(true)]));
+}
+
+#[test]
+fn implied_assignment() {
+    assert_eq!(CNF::implied_assignment(&vec![-1, 2], &vec![Some(true), None]), Some((1, true)));
+    assert_eq!(CNF::implied_assignment(&vec![-1, 2], &vec![Some(true), None, Some(false)]), Some((1, true)));
+    assert_eq!(CNF::implied_assignment(&vec![], &vec![Some(true), None, Some(false)]), None);
+    assert_eq!(CNF::implied_assignment(&vec![-1, 2, 3], &vec![Some(true), Some(false), Some(false)]), None);
+    assert_eq!(CNF::implied_assignment(&vec![-1, 2, 3], &vec![None, Some(true), Some(false)]), None);
+    assert_eq!(CNF::implied_assignment(&vec![1], &vec![None, Some(true), Some(false)]), Some((0, true)));
 }

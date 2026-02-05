@@ -29,13 +29,9 @@ impl CNF {
     // If the formula is SAT, returns a list of the truth assignments where truth_assignment[i]
     // is the truth assignment of variable with id i + 1
     // Otherwise returns Nonesy
-    pub fn find_evidence(self) -> Option<Vec<bool>> {
+    pub fn find_evidence(&mut self) -> Option<Vec<bool>> {
         let mut truth_assignment = self.gen_empty_truth_assignment();
-        if self.dpll_old(1, &mut truth_assignment) {
-            Some(truth_assignment)
-        } else {
-            None
-        }
+        self.dpll(&mut truth_assignment)
     }
 
     // Enforce a certain variable to be either true or false
@@ -85,8 +81,8 @@ impl CNF {
         id + 1
     }
 
-    pub fn gen_empty_truth_assignment(&self) -> Vec<bool> {
-         vec![false; self.symbol_table.len()]
+    pub fn gen_empty_truth_assignment(&self) -> Vec<Option<bool>> {
+         vec![None; self.symbol_table.len()]
     }
 
     pub fn append_clause(&mut self, clause: Vec<isize>) {
@@ -218,36 +214,94 @@ impl CNF {
     }
 
     pub fn is_unit_clause(clause: &Vec<isize>, truth_assignment: &Vec<Option<bool>>) -> bool {
-        let mut found_undef = false;
+        Self::implied_assignment(clause, truth_assignment).is_some()
+    }
+
+    // Checks if clause is a unit clause
+    // If so we return the index and value of the implied variable
+    // If not we return None
+    pub fn implied_assignment(clause: &Vec<isize>, truth_assignment: &Vec<Option<bool>>) -> Option<(usize, bool)> {
+        let mut undef = None;
         for var in clause {
             let value = *var > 0;
             let idx = var.abs() as usize - 1;
 
-            if truth_assignment[idx].is_none() {
-                if found_undef {            // More than one undefined var
-                    return false;
-                } else {
-                    found_undef = true;
+            match truth_assignment[idx] {
+                None => {
+                    if undef.is_some() {            // More than one undefined var
+                        return None;
+                    } else {
+                        undef = Some((idx, value));
+                    }
                 }
-            }
-            if let Some(assigned) = truth_assignment[idx] {
-                if assigned == value {      // Entire clause cancles because literal evalues to true
-                    return false;
+
+                Some(assigned) => {
+                    if assigned == value {          // Entire clause cancles because literal evalues to true
+                        return None;
+                    }
                 }
             }
         }
-        found_undef
+        undef
     }
 
-    fn unit_propigation_set(&self, truth_assignment: &mut Vec<Option<bool>>) {
-        todo!()
+    fn find_implied_assignment(&self, truth_assignment: &Vec<Option<bool>>) -> Option<(usize, bool)> {
+        for clause in self.clauses.iter() {
+            let implied_assignment = Self::implied_assignment(clause, truth_assignment);
+            if implied_assignment.is_some() {
+                return implied_assignment;
+            }
+        } 
+        None
     }
 
-    // Returns if CNF is satisfiable (using DPLL algorithm), takes the variable we want to condition on
-    fn dpll(&mut self, truth_assignment: &mut Vec<Option<bool>>) -> bool {
+    fn next_undef(truth_assignment: &Vec<Option<bool>>) -> Option<usize> {
+        for (idx, assignment) in truth_assignment.iter().enumerate() {
+            if assignment.is_none() {
+                return Some(idx);
+            }
+        }
+        None
+    }
+
+    fn try_assignment(&mut self, truth_assignment: &mut Vec<Option<bool>>, idx: usize, value: bool) -> Option<Vec<bool>> {
+        let mut truth_assignment = truth_assignment.clone();
+        truth_assignment[idx] = Some(value);
+        let assignment =  self.dpll(&mut truth_assignment);
+        // truth_assignment[idx] = None;
+        assignment
+    }
+
+    // Uses dpll algorithm to check for SAT
+    // Returns satisfying truth assignment if SAT,
+    // Returns None if UNSAT
+    fn dpll(&mut self, truth_assignment: &mut Vec<Option<bool>>) -> Option<Vec<bool>> {
         if self.any_falsified(truth_assignment) {
-            return false;
+            return None;
         }
-        todo!()
+
+        while let Some(assignment) = self.find_implied_assignment(truth_assignment) {
+            let (idx, value) = assignment;
+            truth_assignment[idx] = Some(value);
+
+            if self.any_falsified(truth_assignment) {
+                return None;
+            }
+        }
+
+        let next = match Self::next_undef(truth_assignment) {
+            None => return Some(truth_assignment.clone().into_iter().map(|v| v.unwrap()).collect()),
+            Some(idx) => idx,
+        };
+
+        
+        if let Some(satisfying_assignment) = self.try_assignment(truth_assignment, next, true) {
+            Some(satisfying_assignment)
+        }
+        else if let Some(satisfying_assignment) = self.try_assignment(truth_assignment, next, false) {
+            Some(satisfying_assignment)
+        } else {
+            None
+        }
     }
 }
